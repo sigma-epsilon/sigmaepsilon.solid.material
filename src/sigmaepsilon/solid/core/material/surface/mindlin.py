@@ -1,7 +1,8 @@
 from typing import Callable, Iterable, Tuple
 from numbers import Number
+import warnings
 
-from numpy import ndarray
+from numpy import ndarray, ascontiguousarray as ascont
 import numpy as np
 from numpy.linalg import inv
 
@@ -11,8 +12,9 @@ from ..utils.mindlin import (
     _get_shell_material_stiffness_matrix,
     shell_rotation_matrix,
 )
+from ..warnings import SigmaEpsilonMaterialWarning
 
-__all__ = ["MindlinShellSection"]
+__all__ = ["MindlinShellSection", "MindlinPlateSection"]
 
 
 class MindlinShellLayer(SurfaceLayer):
@@ -205,3 +207,40 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         ABDS[7, 7] = ky * S44
         self._shear_correction_factor_x = kx
         self._shear_correction_factor_y = ky
+
+
+class MindlinPlateSection(MindlinShellSection):
+    """
+    A class for Uflyand-Mindlin plates.
+    """
+
+    @MindlinShellSection.eccentricity.setter
+    def eccentricity(self, _: Number) -> None:
+        raise Exception(
+            "Plates can't have eccentricity, consider using a shell instead."
+        )
+
+    def elastic_stiffness_matrix(self, tol: Number = 1e-8) -> ndarray:
+        """
+        Assembles and returns the stiffness matrix.
+        """
+        self._set_layers()
+        ABDS = np.zeros(self.layer_class.__shape__)
+        self._elastic_stiffness_matrix(ABDS)
+
+        D = ABDS[3:6, 3:6]
+        B = ABDS[:3, 3:6]
+        sumB = np.sum(np.abs(B))
+        if sumB > tol:
+            warnings.warn(
+                "It seems that handling this section as a plate only would result in "
+                "missing out on the effect of bending-extension coupling. "
+                "It is suggested to use a shell instead.",
+                SigmaEpsilonMaterialWarning
+            )
+
+        self._ABDS = ascont(D)
+        self._ABDS = (self._ABDS + self._ABDS.T) / 2
+        self._SDBA = np.linalg.inv(self._ABDS)
+        return self._ABDS
+    

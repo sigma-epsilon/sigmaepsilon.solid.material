@@ -1,3 +1,4 @@
-from .mindlin import MindlinShellSection
+from .mindlin import MindlinShellSection, MindlinPlateSection
+from .membrane import MembraneSection
 
-__all__ = ["MindlinShellSection"]
+__all__ = ["MindlinShellSection", "MembraneSection", "MindlinPlateSection"]

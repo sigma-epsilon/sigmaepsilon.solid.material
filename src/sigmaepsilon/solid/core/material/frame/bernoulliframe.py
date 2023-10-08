@@ -55,12 +55,12 @@ class BernoulliFrameSection(LineSection, MaterialLike):
     Plot a section with Matplotlib using 6-noded triangles:
 
     >>> import matplotlib.pyplot as plt
-    >>> from sigmaepsilon.plotting.mpl import triplot
+    >>> from sigmaepsilon.mesh.plotting import triplot_mpl_mesh
     >>> section = BeamSection('CHS', d=1.0, t=0.3, n=32,
     >>>                       mesh_params=dict(n_max=20))
     >>> triobj = section.trimesh(T6=True).to_triobj()
     >>> fig, ax = plt.subplots(figsize=(4, 2))
-    >>> triplot(triobj, fig=fig, ax=ax, lw=0.1)
+    >>> triplot_mpl_mesh(triobj, fig=fig, ax=ax, lw=0.1)
     """
 
     def calculate_section_properties(self, separate: bool = False) -> dict:

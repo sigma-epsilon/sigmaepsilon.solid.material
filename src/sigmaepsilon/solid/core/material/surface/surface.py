@@ -101,6 +101,10 @@ class SurfaceSection(Generic[T]):
         else:
             raise TypeError(f"Expected Number, got {type(value)}.")
 
+    @property
+    def thickness(self) -> Number:
+        return sum([l.thickness for l in self.layers])
+    
     @classmethod
     def Layer(cls, *args, **kwargs) -> T:
         """
@@ -137,5 +141,6 @@ class SurfaceSection(Generic[T]):
         self._set_layers()
         self._ABDS = np.zeros(self.layer_class.__shape__)
         self._elastic_stiffness_matrix(self._ABDS)
+        self._ABDS = (self._ABDS + self._ABDS.T) / 2
         self._SDBA = np.linalg.inv(self._ABDS)
         return self._ABDS
