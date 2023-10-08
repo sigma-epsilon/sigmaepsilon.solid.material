@@ -7,9 +7,9 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "sigmaepsilon.solid.core"
-version = "0.0.2a"
-description = "Essential stuff for working with solid structures."
+name = "sigmaepsilon.solid.material"
+version = "0.0.1a"
+description = "Material models for solid structures."
 classifiers=[
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: MIT License",
@@ -46,4 +46,4 @@ optional-dependencies.devops = { file = ["requirements-devops.txt"] }
 optional-dependencies.docs = { file = ["docs/requirements.txt"] }
 
 [project.urls]
-Homepage = "https://github.com/sigma-epsilon/sigmaepsilon.solid"
+Homepage = "https://github.com/sigma-epsilon/sigmaepsilon.solid.material"

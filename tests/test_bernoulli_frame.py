@@ -1,7 +1,7 @@
 import unittest
 
 from sigmaepsilon.core.testing import SigmaEpsilonTestCase
-from sigmaepsilon.solid.core import BernoulliFrameSection
+from sigmaepsilon.solid.material import BernoulliFrameSection
 
 
 class TestBernoulliFrameSection(SigmaEpsilonTestCase):

@@ -2,8 +2,8 @@ import unittest
 import numpy as np
 from numbers import Number
 
-from sigmaepsilon.solid.core.material.testing import SolidMaterialTestCase
-from sigmaepsilon.solid.core import MindlinShellSection as Section
+from sigmaepsilon.solid.material.testing import SolidMaterialTestCase
+from sigmaepsilon.solid.material import MindlinShellSection as Section
 
 
 class TestMindlinShellSection(SolidMaterialTestCase):

@@ -1,10 +1,10 @@
 import unittest
 import numpy as np
 
-from sigmaepsilon.solid.core.material.testing import SolidMaterialTestCase
-from sigmaepsilon.solid.core.material import ElasticityTensor
+from sigmaepsilon.solid.material.testing import SolidMaterialTestCase
+from sigmaepsilon.solid.material import ElasticityTensor
 from sigmaepsilon.math.linalg import ReferenceFrame
-from sigmaepsilon.solid.core.material.utils import elastic_stiffness_matrix
+from sigmaepsilon.solid.material.utils import elastic_stiffness_matrix
 
 
 def membrane_part(Q_in: np.ndarray):

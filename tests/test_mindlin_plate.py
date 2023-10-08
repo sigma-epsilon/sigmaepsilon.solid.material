@@ -1,9 +1,9 @@
 import unittest
 from numbers import Number
 
-from sigmaepsilon.solid.core.material.testing import SolidMaterialTestCase
-from sigmaepsilon.solid.core import MindlinPlateSection as Section
-from sigmaepsilon.solid.core.material.warnings import SigmaEpsilonMaterialWarning
+from sigmaepsilon.solid.material.testing import SolidMaterialTestCase
+from sigmaepsilon.solid.material import MindlinPlateSection as Section
+from sigmaepsilon.solid.material.warnings import SigmaEpsilonMaterialWarning
 
 
 class TestMindlinPlateSection(SolidMaterialTestCase):
