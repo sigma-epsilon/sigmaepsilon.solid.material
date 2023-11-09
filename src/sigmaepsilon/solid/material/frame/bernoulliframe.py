@@ -1,7 +1,7 @@
 import numpy as np
 
 from sigmaepsilon.math import atleastnd, ascont
-from sigmaepsilon.mesh.section import LineSection
+from sigmaepsilon.mesh.domains.section import LineSection
 
 from ..utils.bernoulli import calc_beam_stresses_2d, calc_beam_stresses_4d
 from ..abstract import MaterialLike
