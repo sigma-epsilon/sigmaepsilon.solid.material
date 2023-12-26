@@ -6,7 +6,7 @@ class SigmaEpsilonMaterialWarning(UserWarning):
         super().__init__(message)
 
     def __str__(self):
-        return f"[sigmaepsilon.solid.core] {self.args[0]}"
+        return f"[sigmaepsilon.solid.material] {self.args[0]}"
     
 
 warnings.simplefilter("always", SigmaEpsilonMaterialWarning)
