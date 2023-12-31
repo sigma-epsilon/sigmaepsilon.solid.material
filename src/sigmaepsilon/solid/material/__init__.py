@@ -4,6 +4,7 @@ from .surface import (
     MembraneSection,
     MindlinPlateSection,
     KirchhoffPlateSection,
+    KirchhoffShellSection,
 )
 from .stresstensor import CauchyStressTensor
 from .straintensor import SmallStrainTensor
@@ -13,6 +14,7 @@ __all__ = [
     "BernoulliFrameSection",
     "MindlinShellSection",
     "KirchhoffPlateSection",
+    "KirchhoffShellSection",
     "MembraneSection",
     "MindlinPlateSection",
     "CauchyStressTensor",
