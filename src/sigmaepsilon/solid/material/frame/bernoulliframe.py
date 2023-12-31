@@ -1,15 +1,14 @@
 import numpy as np
 
 from sigmaepsilon.math import atleastnd, ascont
-from sigmaepsilon.mesh.section import LineSection
+from sigmaepsilon.mesh.domains.section import LineSection
 
 from ..utils.bernoulli import calc_beam_stresses_2d, calc_beam_stresses_4d
-from ..abstract import MaterialLike
 
 __all__ = ["BernoulliFrameSection"]
 
 
-class BernoulliFrameSection(LineSection, MaterialLike):
+class BernoulliFrameSection(LineSection):
     """
     Wraps an instance of `sectionproperties.analysis.section.Section` and
     adds a little here and there to make some of the functionality more

@@ -1,10 +1,13 @@
+from typing import Optional, Tuple, Iterable
+
 import numpy as np
+from numpy import ndarray
+
 from numba import njit, prange
-from collections import Iterable
 
 from sigmaepsilon.math import ascont, atleast1d, atleast2d, atleast3d, atleast4d
 
-from .surface import layers_of_points, points_of_layers
+from .surface import layers_of_points_1d, layers_of_points_3d, points_of_layers
 from .mindlin import (
     z_to_shear_factors,
     shear_correction_data,
@@ -14,7 +17,7 @@ from .mindlin import (
 __cache = True
 
 
-@njit(nogil=True, parallel=True, cache=__cache)
+#@njit(nogil=True, parallel=True, cache=__cache)
 def _pproc_Mindlin_3D(
     ABDS: np.ndarray,
     sfx: np.ndarray,
@@ -28,7 +31,12 @@ def _pproc_Mindlin_3D(
     e_45: np.ndarray,
 ):
     nRHS, nP, _ = e_126_n.shape
-    layerinds = layers_of_points(points, bounds)
+    is_3d = len(points.shape) == 2 and points.shape[-1] == 3
+    
+    if is_3d:
+        layerinds = layers_of_points_3d(points, bounds)
+    else:
+        layerinds = layers_of_points_1d(points, bounds)
 
     # results
     s_126_n = np.zeros((nRHS, nP, 3), dtype=ABDS.dtype)
@@ -38,9 +46,14 @@ def _pproc_Mindlin_3D(
     e_45_new = np.zeros((nRHS, nP, 2), dtype=ABDS.dtype)
 
     for iP in prange(nP):
-        zP = points[iP, 2]
+        if is_3d:
+            zP = points[iP, 2]
+        else:
+            zP = points[iP]
+            
         lP = layerinds[iP]
         sfxz, sfyz = z_to_shear_factors(zP, sfx[lP, :], sfy[lP, :])
+        
         for iRHS in prange(nRHS):
             e_126_m[iRHS, iP] = zP * c_126[iRHS, iP]
             s_126_n[iRHS, iP] = C_126[lP] @ e_126_n[iRHS, iP]
@@ -189,29 +202,36 @@ def _pproc_Mindlin_3D_rgrid(
 
 
 def pproc_Mindlin_3D(
-    ABDS: np.ndarray,
+    ABDS: ndarray,
     C_126: Iterable,
     C_45: Iterable,
     bounds: Iterable,
-    points: np.ndarray,
-    strains2d: np.ndarray,
+    points: ndarray,
+    strains2d: ndarray,
     *args,
-    angles: Iterable = None,
-    separate=True,
-    shear_factors: Iterable = None,
-    **kwargs
-):
+    angles: Optional[Iterable] = None,
+    separate: Optional[bool] = True,
+    shear_factors: Optional[Iterable] = None,
+    **kwargs,
+) -> Tuple[ndarray, ndarray]:
+    """ 
+    Calculates stresses for Uflyand-Mindlin plates. The function can handle multiple
+    left and right hand sides.
+    """
     # formatting
     ABDS = atleast3d(ABDS)
     strains2d = atleast4d(strains2d)
+
     if isinstance(C_126, np.ndarray):
         C_126 = atleast4d(C_126)
     else:
         C_126 = [atleast3d(C_126[i]) for i in range(len(C_126))]
+
     if isinstance(C_45, np.ndarray):
         C_45 = atleast4d(C_45)
     else:
         C_45 = [atleast3d(C_45[i]) for i in range(len(C_45))]
+
     if isinstance(bounds, np.ndarray):
         bounds = atleast3d(bounds)
     else:
@@ -221,14 +241,17 @@ def pproc_Mindlin_3D(
     if angles is not None:
         C_126_g = np.zeros_like(C_126)
         C_45_g = np.zeros_like(C_45)
+
         if isinstance(angles, np.ndarray):
             angles = atleast2d(angles)
         else:
             angles = [atleast1d(angles[i]) for i in range(len(angles))]
+        
         for iLHS in range(len(angles)):
             C_126_g[iLHS], C_45_g[iLHS] = material_stiffness_matrices(
                 C_126[iLHS], C_45[iLHS], angles[iLHS]
             )
+
         C_126 = C_126_g
         C_45 = C_45_g
         del C_126_g
@@ -248,7 +271,7 @@ def pproc_Mindlin_3D(
                 atleast3d(shear_factors[i]) for i in range(len(shear_factors))
             ]
 
-    nLHS, nRHS, nP, _ = strains2d.shape
+    nLHS, nRHS, nP, nX = strains2d.shape
     e_126_n = ascont(strains2d[:, :, :, :3])
     s_126_n = np.zeros((nLHS, nRHS, nP, 3), dtype=ABDS.dtype)
     s_126_m = np.zeros((nLHS, nRHS, nP, 3), dtype=ABDS.dtype)
@@ -259,9 +282,16 @@ def pproc_Mindlin_3D(
     for i in range(nLHS):
         sfx_i = ascont(shear_factors[i][:, 0, :])
         sfy_i = ascont(shear_factors[i][:, 1, :])
-        e_126_n_i = ascont(strains2d[i, :, :, :3])
-        c_126_i = ascont(strains2d[i, :, :, 3:6])
-        e_45_i = ascont(strains2d[i, :, :, 6:8])
+        
+        if nX == 8:
+            e_126_n_i = ascont(strains2d[i, :, :, :3])
+            c_126_i = ascont(strains2d[i, :, :, 3:6])
+            e_45_i = ascont(strains2d[i, :, :, 6:8])
+        elif nX == 5:
+            e_126_n_i = np.zeros((nRHS, nP, 3), dtype=float)
+            c_126_i = ascont(strains2d[i, :, :, :3])
+            e_45_i = ascont(strains2d[i, :, :, 3:])
+            
         (
             s_126_n[i],
             s_126_m[i],

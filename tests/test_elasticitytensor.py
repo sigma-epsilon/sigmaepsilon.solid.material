@@ -124,7 +124,42 @@ class TestElasticityTensor(SolidMaterialTestCase):
         tensor.orient("Space", -angles, "123")
         _matrix = tensor.contracted_components()
         self.assertLess(np.sum(np.abs(matrix - _matrix)), 1e-8)
-                        
+    
+    def test_isotropic(self):        
+        hooke = elastic_stiffness_matrix(E=210000, NU=0.3)
+        yield_strength=355.0
+
+        self.assertValidMaterial(hooke)
+
+        # create a 4d tensor from this matrix and check if the 2d representation of it
+        # coincides with the matrix
+        frame = ReferenceFrame(dim=3)
+        tensor = ElasticityTensor(hooke, frame=frame, tensorial=False, yield_strength=yield_strength)
+        
+        strains = tensor.calculate_strains(np.array([yield_strength, 0.0, 0.0, 0.0, 0.0, 0.0]))
+        self.assertTrue(np.isclose(strains[1], strains[2]))
+        
+        self.assertEqual(tensor.calculate_stresses(np.random.rand(6)).shape, (6,))
+        self.assertEqual(tensor.calculate_stresses(np.random.rand(10, 6)).shape, (10, 6))
+        
+        strains = tensor.calculate_strains(np.array([yield_strength, 0.0, 0.0, 0.0, 0.0, 0.0]))
+        util = tensor.utilization(strains) * 100
+        self.assertTrue(np.isclose(util, 100.0))
+        
+        strains = tensor.calculate_strains(np.eye(6) * yield_strength)
+        utils = tensor.utilization(strains) * 100
+        self.assertTrue(np.isclose(utils[0], 100.0))
+        self.assertTrue(np.isclose(util[1], 100.0))
+        self.assertTrue(np.isclose(util[2], 100.0))
+        
+        value_a = tensor.calculate_equivalent_stress(np.array([0.002, 0.0, 0.0, 0.0, 0.0, 0.0]))
+        value_b = tensor.calculate_equivalent_stress(np.array([0.0, 0.002, 0.0, 0.0, 0.0, 0.0]))
+        self.assertTrue(np.isclose(value_a, value_b))
+        
+        # simple evaluations
+        tensor.utilization(2*np.random.rand(10, 6)/1000)
+        tensor.utilization(*(2*np.random.rand(10)/1000 for _ in range(6)))
+        tensor.utilization(*(2*np.random.rand(10)/1000 for _ in range(6))) 
 
 if __name__ == "__main__":
     unittest.main()

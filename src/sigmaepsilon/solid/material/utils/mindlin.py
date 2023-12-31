@@ -12,7 +12,7 @@ __cache = True
 
 def _get_shell_material_stiffness_matrix(hooke: ndarray) -> ndarray:
     """
-    Returns the material stiffness matrices C126 and C45 from the 6x6
+    Returns the 5x5 material stiffness matrix of a shell from the 6x6
     material stiffness matrix.
     """
     offset = 0 if hooke.shape[-1] == 6 else 1
@@ -191,7 +191,7 @@ def shear_factors_ST(ABDS: ndarray, C_126: ndarray, z: ndarray):
     return shear_factors
 
 
-@njit(nogil=True, parallel=True, cache=__cache)
+#@njit(nogil=True, parallel=True, cache=__cache)
 def shear_correction_data(
     ABDS: ndarray, C_126: ndarray, C_45: ndarray, bounds: ndarray
 ) -> Tuple[ndarray, ndarray]:

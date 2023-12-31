@@ -38,11 +38,11 @@ def model_strains(dofsol1d: ndarray, gnum: ndarray, B: ndarray) -> ndarray:
 
 
 @njit(nogil=True, parallel=True, cache=__cache)
-def model_strains_multi(data: ndarray, gnum: ndarray, B: ndarray) -> ndarray:
+def model_strains_multi(dofsol: ndarray, gnum: ndarray, B: ndarray) -> ndarray:
     nE, nP, NSTRE = B.shape[:3]
-    esol = element_dof_solution_bulk_multi(data, gnum)
+    esol = element_dof_solution_bulk_multi(dofsol, gnum)
     nRHS = esol.shape[0]
-    res = np.zeros((nRHS, nE, nP, NSTRE), dtype=data.dtype)
+    res = np.zeros((nRHS, nE, nP, NSTRE), dtype=dofsol.dtype)
     for iE in prange(nE):
         for iP in prange(nP):
             for j in prange(nRHS):

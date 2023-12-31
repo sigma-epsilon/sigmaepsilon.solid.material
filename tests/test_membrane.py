@@ -1,8 +1,13 @@
 import unittest
 from numbers import Number
 
+import numpy as np
+
 from sigmaepsilon.solid.material.testing import SolidMaterialTestCase
 from sigmaepsilon.solid.material import MembraneSection as Section
+from sigmaepsilon.math.linalg import ReferenceFrame
+from sigmaepsilon.solid.material import ElasticityTensor
+from sigmaepsilon.solid.material.utils import elastic_stiffness_matrix
 from sigmaepsilon.solid.material.warnings import SigmaEpsilonMaterialWarning
 
 
@@ -79,7 +84,24 @@ class TestMindlinPlateSection(SolidMaterialTestCase):
         ABDS = section.elastic_stiffness_matrix()
         self.assertEqual(ABDS.shape, (3, 3))
         self.assertValidMaterial(ABDS)
+        
+    def test_membrane_utilization(self):
+        yield_strength=355.0
+        hooke = elastic_stiffness_matrix(E=210000, NU=0.3)
+        frame = ReferenceFrame(dim=3)
+        tensor = ElasticityTensor(hooke, frame=frame, tensorial=False, yield_strength=yield_strength)
 
+        section = Section(
+            layers=[Section.Layer(material=tensor, thickness=0.1)]
+        )
+        section.elastic_stiffness_matrix()
+        
+        section.utilization(strains=2*np.random.rand(3)/1000)*100
+        section.utilization(strains=np.array([1.0, 0.0, 0.0]), z=[0], squeeze=False)
+        section.utilization(strains=np.array([1.0, 0.0, 0.0]), z=[0], squeeze=True)
+        section.utilization(strains=np.array([1.0, 0.0, 0.0]), z=[-1, 0, 1], squeeze=False)
+        section.utilization(strains=np.array([1.0, 0.0, 0.0]), z=[-1, 0, 1], squeeze=True)
+        section.utilization(strains=2*np.random.rand(5, 3)/1000)*100
 
 if __name__ == "__main__":
     unittest.main()
