@@ -430,7 +430,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
                 stresses=stresses,
                 z=z,
                 rng=rng,
-                squeeze=squeeze,
+                squeeze=False,
                 mode=mode,
                 layers=_layers,
                 **kwargs

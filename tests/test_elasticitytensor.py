@@ -147,10 +147,10 @@ class TestElasticityTensor(SolidMaterialTestCase):
         self.assertTrue(np.isclose(util, 100.0))
         
         strains = tensor.calculate_strains(np.eye(6) * yield_strength)
-        utils = tensor.utilization(strains) * 100
+        utils = tensor.utilization(strains=strains) * 100
         self.assertTrue(np.isclose(utils[0], 100.0))
-        self.assertTrue(np.isclose(util[1], 100.0))
-        self.assertTrue(np.isclose(util[2], 100.0))
+        self.assertTrue(np.isclose(utils[1], 100.0))
+        self.assertTrue(np.isclose(utils[2], 100.0))
         
         value_a = tensor.calculate_equivalent_stress(np.array([0.002, 0.0, 0.0, 0.0, 0.0, 0.0]))
         value_b = tensor.calculate_equivalent_stress(np.array([0.0, 0.002, 0.0, 0.0, 0.0, 0.0]))

@@ -11,7 +11,7 @@ from sigmaepsilon.solid.material.utils import elastic_stiffness_matrix
 from sigmaepsilon.solid.material.warnings import SigmaEpsilonMaterialWarning
 
 
-class TestMindlinPlateSection(SolidMaterialTestCase):
+class TestMembraneSection(SolidMaterialTestCase):
     def test_membrane_behaviour(self):
         section = Section(
             layers=[
@@ -96,7 +96,7 @@ class TestMindlinPlateSection(SolidMaterialTestCase):
         )
         section.elastic_stiffness_matrix()
         
-        section.utilization(strains=2*np.random.rand(3)/1000)*100
+        section.utilization(strains=2*np.random.rand(10, 3)/1000)*100
         section.utilization(strains=np.array([1.0, 0.0, 0.0]), z=[0], squeeze=False)
         section.utilization(strains=np.array([1.0, 0.0, 0.0]), z=[0], squeeze=True)
         section.utilization(strains=np.array([1.0, 0.0, 0.0]), z=[-1, 0, 1], squeeze=False)

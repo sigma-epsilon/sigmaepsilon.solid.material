@@ -26,7 +26,7 @@ class TestMindlinPlateSection(SolidMaterialTestCase):
         layer.material = layer.material
         self.assertFailsProperly(TypeError, setattr, layer, "material", "a")
 
-    def test_mindlin_shell_section_1(self):
+    def test_mindlin_plate_section_1(self):
         section = Section(
             layers=[
                 Section.Layer(
@@ -35,7 +35,7 @@ class TestMindlinPlateSection(SolidMaterialTestCase):
             ]
         )
         ABDS = section.elastic_stiffness_matrix()
-        self.assertEqual(ABDS.shape, (3, 3))
+        self.assertEqual(ABDS.shape, (5, 5))
         self.assertValidMaterial(ABDS)
 
     def test_mindlin_plate_section_warning_1(self):
@@ -61,7 +61,7 @@ class TestMindlinPlateSection(SolidMaterialTestCase):
 
         self.assertWarns(SigmaEpsilonMaterialWarning, section.elastic_stiffness_matrix)
         ABDS = section.elastic_stiffness_matrix()
-        self.assertEqual(ABDS.shape, (3, 3))
+        self.assertEqual(ABDS.shape, (5, 5))
         self.assertValidMaterial(ABDS)
 
     def test_mindlin_plate_section_warning_2(self):
@@ -77,7 +77,7 @@ class TestMindlinPlateSection(SolidMaterialTestCase):
         
         self.assertWarns(SigmaEpsilonMaterialWarning, section.elastic_stiffness_matrix)
         ABDS = section.elastic_stiffness_matrix()
-        self.assertEqual(ABDS.shape, (3, 3))
+        self.assertEqual(ABDS.shape, (5, 5))
         self.assertValidMaterial(ABDS)
 
 
