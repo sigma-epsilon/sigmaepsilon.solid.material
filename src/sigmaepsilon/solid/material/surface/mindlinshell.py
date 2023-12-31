@@ -373,6 +373,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         squeeze: Optional[bool] = True,
         ppl: Optional[Union[int, None]] = None,
         mode: Optional[str] = "stress",
+        **kwargs
     ) -> Union[Number, Iterable[Number]]:
         """
         Calculates stresses, equivalent stresses or utilizations, according to the parameter
@@ -431,7 +432,8 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
                 rng=rng,
                 squeeze=squeeze,
                 mode=mode,
-                layers=_layers
+                layers=_layers,
+                **kwargs
             )
             
             if len(result.shape) == 2:
@@ -451,6 +453,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
                 rng=rng,
                 squeeze=squeeze,
                 mode=mode,
+                **kwargs
             )
 
     def _postprocess_standard_form(
@@ -463,6 +466,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         squeeze: Optional[bool] = True,
         mode: Optional[str] = "stress",
         layers: Optional[Union[Iterable[MindlinShellLayer], None]] = None,
+        **kwargs
     ) -> Union[Number, Iterable[Number]]:
         """
         Calculates stresses, equivalent stresses or utilizations, according to the parameter

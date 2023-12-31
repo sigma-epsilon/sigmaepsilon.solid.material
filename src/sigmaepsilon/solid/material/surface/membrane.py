@@ -106,11 +106,10 @@ class MembraneSection(MindlinShellSection):
     ... )
     >>> section.elastic_stiffness_matrix().shape
     (3, 3)
-    
     """
 
     layer_class = MembraneLayer
-    model_type = ModelType.PLATE_UFLYAND_MINDLIN
+    model_type = ModelType.MEMBRANE
 
     def __init__(self, *args, assume_regular: bool = False, **kwargs):
         self._assume_regular = assume_regular
@@ -126,7 +125,7 @@ class MembraneSection(MindlinShellSection):
     @MindlinShellSection.eccentricity.setter
     def eccentricity(self, _: Number) -> None:
         raise Exception(
-            "Membranes can't have eccentricity, consider using a shell instead."
+            "Membranes can't have eccentricity, consider using a shell model instead."
         )
 
     def elastic_stiffness_matrix(self, tol: Number = 1e-8) -> ndarray:
