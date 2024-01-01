@@ -1,4 +1,7 @@
+from typing import Optional, Union
+
 import numpy as np
+from numpy import ndarray
 
 from sigmaepsilon.math import atleastnd, ascont
 from sigmaepsilon.mesh.domains.section import LineSection
@@ -34,7 +37,7 @@ class BernoulliFrameSection(LineSection):
     wrap: :class:`sectionproperties.analysis.section.Section`
         A section object to be wrapped. It can also be provided as the
         first positional argument.
-    
+
     Notes
     -----
     The implementation here only covers homogeneous cross sections. If you want
@@ -43,7 +46,7 @@ class BernoulliFrameSection(LineSection):
 
     Examples
     --------
-    >>> from sigmaepsilon.solid import BeamSection
+    >>> from sigmaepsilon.solid.material import BeamSection
     >>> section = BeamSection(get_section('CHS', d=1.0, t=0.1, n=64))
 
     or simply provide the shape as the first argument and everything
@@ -62,7 +65,7 @@ class BernoulliFrameSection(LineSection):
     >>> triplot_mpl_mesh(triobj, fig=fig, ax=ax, lw=0.1)
     """
 
-    def calculate_section_properties(self, separate: bool = False) -> dict:
+    def calculate_section_properties(self, separate: Optional[bool] = False) -> dict:
         """
         Retruns a dictionary containing the properties of the section.
         """
@@ -96,7 +99,11 @@ class BernoulliFrameSection(LineSection):
         self.props = section_properties
         return section_properties
 
-    def elastic_stiffness_matrix(self, E: float = None, nu: float = None) -> np.ndarray:
+    def elastic_stiffness_matrix(
+        self,
+        E: Optional[Union[float, None]] = None,
+        nu: Optional[Union[float, None]] = None,
+    ) -> ndarray:
         """
         Returns the elastic stiffness matrix of the section.
 
@@ -129,7 +136,7 @@ class BernoulliFrameSection(LineSection):
             ]
         )
 
-    def calculate_stresses(self, forces: np.ndarray) -> np.ndarray:
+    def calculate_stresses(self, forces: ndarray) -> ndarray:
         """
         Returns stresses for all points of the mesh. The internal forces
         are expected in the order Fx, Fy, Fz, Mx, My, Mz, where x, y and z
@@ -181,7 +188,7 @@ class BernoulliFrameSection(LineSection):
         -----
         This only covers homogeneous cross sections.
         """
-        assert isinstance(forces, np.ndarray)
+        assert isinstance(forces, ndarray)
         factors = self.props["stress-factors"]
         nD = len(forces.shape)
         if nD == 1:

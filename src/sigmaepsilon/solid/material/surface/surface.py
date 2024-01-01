@@ -1,11 +1,11 @@
-from typing import Iterable, Optional, Generic, TypeVar, Union, Tuple
+from typing import Iterable, Optional, Generic, TypeVar, Union, MutableMapping, Hashable
 from numbers import Number
 from abc import abstractmethod
 
 import numpy as np
 from numpy import ndarray
 
-from ..meta import BaseMaterialLike
+from ..proto import BaseMaterialLike
 from ..elasticitytensor import ElasticityTensor
 from ..enums import ModelType
 
@@ -106,17 +106,38 @@ T = TypeVar("T", bound=SurfaceLayer)
 
 class SurfaceSection(Generic[T]):
     """
-    A generic base class for all kinds of surfaces. Every surface consists of 
+    A generic base class for all kinds of surfaces. Every surface consists of
     layers. Every layer has a base material.
     """
+
     layer_class: T = SurfaceLayer
     model_type: ModelType = ModelType.DEFAULT
 
-    def __init__(self, layers: Iterable[T], eccentricity: Optional[Number] = 0.0):
+    def __init__(
+        self,
+        layers: Iterable[T],
+        layout: Optional[Union[MutableMapping[Hashable, T], None]] = None,
+        eccentricity: Optional[Number] = 0.0,
+    ):
         self._layers = layers
+        self._layout = layout
         self._eccentricity = eccentricity
         self._ABDS = None
         self._SDBA = None
+
+    @property
+    def layout(self) -> MutableMapping[Hashable, T]:
+        """
+        Returns the layout.
+        """
+        return self._layout
+    
+    @property
+    def layers(self) -> Iterable[T]:
+        """
+        Returns the layers.
+        """
+        return self._layers
 
     @property
     def SDBA(self) -> ndarray:
@@ -131,13 +152,6 @@ class SurfaceSection(Generic[T]):
         Returns the so called 'ABDS' matrix of the shell.
         """
         return self._ABDS
-
-    @property
-    def layers(self) -> Iterable[T]:
-        """
-        Returns the layers.
-        """
-        return self._layers
 
     @property
     def eccentricity(self) -> Number:
@@ -283,7 +297,7 @@ class SurfaceSection(Generic[T]):
         with minimal experimentation.
         """
         raise NotImplementedError
-        
+
     def calculate_stresses(self, *args, **kwargs) -> ndarray:
         """
         Calculates material stresses for input internal forces or strains
@@ -310,10 +324,10 @@ class SurfaceSection(Generic[T]):
             Point per layer. Default is None.
         """
         raise NotImplementedError
-    
+
     def calculate_equivalent_stress(self, *args, **kwargs) -> ndarray:
         """
-        Calculates equivalent material stresses for input internal forces or strains 
+        Calculates equivalent material stresses for input internal forces or strains
         according to the built-in failure criteria and returns it as a NumPy array.
 
         Either strains or stresses must be provided.

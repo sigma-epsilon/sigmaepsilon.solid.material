@@ -31,6 +31,22 @@ class StiffnessLike(Protocol):
 
 
 @runtime_checkable
+class FailureLike(Protocol):
+    """
+    Classes that implement this protocol are suitable for providing
+    failure definition for materials.
+    """
+
+    def utilization(self) -> Union[Number, Iterable[Number]]:
+        """
+        A function that returns a positive number. If the value is 1.0, it means that the material
+        is at peak performance and any further increase in the loads is very likely to lead to failure
+        of the material.
+        """
+        ...
+
+
+@runtime_checkable
 class BaseMaterialLike(StiffnessLike, Protocol):
     """
     Base class for materials.
@@ -58,7 +74,7 @@ class BaseMaterialLike(StiffnessLike, Protocol):
         depending on the shape of the input array.
         """
         ...
-    
+
     def calculate_equivalent_stress(self) -> ndarray:
         """
         A function that returns stresses for strains as either an 1d or a 2d NumPy array,
