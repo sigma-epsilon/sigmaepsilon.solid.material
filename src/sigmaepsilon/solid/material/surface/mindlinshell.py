@@ -17,7 +17,7 @@ from ..utils.mindlin import (
     z_to_shear_factors,
 )
 from ..utils.postproc import pproc_Mindlin_3D
-from ..enums import ModelType
+from ..enums import MaterialModelType
 
 __all__ = ["MindlinShellSection"]
 
@@ -156,7 +156,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
     """
 
     layer_class = MindlinShellLayer
-    model_type = ModelType.SHELL_UFLYAND_MINDLIN
+    model_type = MaterialModelType.SHELL_UFLYAND_MINDLIN
 
     @staticmethod
     def Material(**kwargs) -> ndarray:

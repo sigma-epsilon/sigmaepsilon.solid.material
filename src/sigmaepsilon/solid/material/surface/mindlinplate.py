@@ -12,7 +12,7 @@ from .mindlinshell import MindlinShellLayer, MindlinShellSection
 from ..utils.hmh import HMH_S_multi
 from ..utils.mindlin import z_to_shear_factors
 from ..warnings import SigmaEpsilonMaterialWarning
-from ..enums import ModelType
+from ..enums import MaterialModelType
 
 __all__ = ["MindlinPlateSection"]
 
@@ -59,7 +59,7 @@ class MindlinPlateSection(MindlinShellSection):
     (10, 2, 3)
     """
 
-    model_type = ModelType.PLATE_UFLYAND_MINDLIN
+    model_type = MaterialModelType.PLATE_UFLYAND_MINDLIN
 
     @MindlinShellSection.eccentricity.setter
     def eccentricity(self, _: Number) -> None:

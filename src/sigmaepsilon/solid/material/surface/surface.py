@@ -7,7 +7,7 @@ from numpy import ndarray
 
 from ..proto import BaseMaterialLike
 from ..elasticitytensor import ElasticityTensor
-from ..enums import ModelType
+from ..enums import MaterialModelType
 
 __all__ = ["SurfaceSection"]
 
@@ -20,7 +20,7 @@ class SurfaceLayer:
     __loc__ = [-1.0, 0.0, 1.0]
     __shape__ = (8, 8)
 
-    model_type: ModelType = ModelType.DEFAULT
+    model_type: MaterialModelType = MaterialModelType.DEFAULT
 
     def __init__(
         self,
@@ -111,7 +111,7 @@ class SurfaceSection(Generic[T]):
     """
 
     layer_class: T = SurfaceLayer
-    model_type: ModelType = ModelType.DEFAULT
+    model_type: MaterialModelType = MaterialModelType.DEFAULT
 
     def __init__(
         self,

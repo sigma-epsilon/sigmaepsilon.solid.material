@@ -10,7 +10,7 @@ from sigmaepsilon.math import to_range_1d
 from .mindlinshell import MindlinShellLayer, MindlinShellSection
 from ..utils.hmh import HMH_S_multi
 from ..utils.mindlin import z_to_shear_factors
-from ..enums import ModelType
+from ..enums import MaterialModelType
 
 __all__ = ["KirchhoffShellSection"]
 
@@ -57,7 +57,7 @@ class KirchhoffShellSection(MindlinShellSection):
     (10, 2, 3)
     """
 
-    model_type = ModelType.SHELL_KIRCHHOFF_LOVE
+    model_type = MaterialModelType.SHELL_KIRCHHOFF_LOVE
 
     def elastic_stiffness_matrix(self, tol: Number = 1e-8) -> ndarray:
         """

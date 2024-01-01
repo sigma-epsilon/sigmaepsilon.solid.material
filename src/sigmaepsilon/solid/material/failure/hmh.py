@@ -1,9 +1,11 @@
-from typing import Optional, Tuple, Union, Iterable
+from typing import Optional, Tuple, Union, ClassVar, Iterable, MutableMapping
+from collections import defaultdict
 
 import numpy as np
 from numpy import ndarray
 
 from sigmaepsilon.math import atleast2d
+
 from ..utils.hmh import (
     HMH_3d_v,
     HMH_3d_multi,
@@ -12,19 +14,48 @@ from ..utils.hmh import (
     HMH_M_multi,
     HMH_M_v,
 )
+from ..enums import MaterialModelType
+from ..evaluator import FunctionEvaluator
 
 
-class HuberMisesHenckyFailureTheory:
+__all__ = [
+    "HuberMisesHenckyFailureModel",
+    "HuberMisesHenckyFailureModel_SP",
+    "HuberMisesHenckyFailureModel_M",
+]
+
+
+class HuberMisesHenckyFailureModel:
     """
     A class to represent the Huber-Mises-Hencky yield condition.
+
+    Instances are callable and can handle arguments in many forms.
 
     Parameters
     ----------
     yield_strength: float
     """
 
-    def __init__(self, yield_strength: float):
+    model_type: ClassVar[
+        Union[MaterialModelType, Iterable[MaterialModelType]]
+    ] = MaterialModelType.DEFAULT
+
+    def __init__(
+        self,
+        yield_strength: Optional[float] = np.Infinity,
+        evaluator: Optional[Union[FunctionEvaluator, None]] = None,
+    ):
+        if isinstance(evaluator, FunctionEvaluator):
+            evaluator = defaultdict(lambda: evaluator)
+
+        if evaluator is None:
+            evaluator = dict(
+                vectorized=FunctionEvaluator(HMH_3d_v, vectorized=True),
+                bulk=FunctionEvaluator(HMH_3d_multi, bulk=True),
+            )
+
         self._yield_strength = yield_strength
+        self._evaluator = evaluator
 
     @property
     def yield_strength(self) -> float:
@@ -33,28 +64,23 @@ class HuberMisesHenckyFailureTheory:
         """
         return self._yield_strength
 
-    def _utilization_3d(self, stresses: Union[ndarray, Tuple[ndarray]]) -> ndarray:
-        if isinstance(stresses, ndarray):
-            return HMH_3d_multi(stresses) / self.yield_strength
-        elif isinstance(stresses, tuple):
-            return HMH_3d_v(*stresses) / self.yield_strength
-        raise NotImplementedError
+    @property
+    def evaluator(self) -> MutableMapping[str, FunctionEvaluator]:
+        """
+        Returns a dictionary that returns all the possible backend
+        implementations, each for different shapes of inputs.
+        """
+        return self._evaluator
 
-    def _utilization_mindlin(self, stresses: Union[ndarray, Tuple[ndarray]]) -> ndarray:
-        if isinstance(stresses, ndarray):
-            return HMH_S_multi(stresses) / self.yield_strength
-        elif isinstance(stresses, tuple):
-            return HMH_S_v(*stresses) / self.yield_strength
-        raise NotImplementedError
-
-    def _utilization_membrane(
-        self, stresses: Union[ndarray, Tuple[ndarray]]
-    ) -> ndarray:
-        if isinstance(stresses, ndarray):
-            return HMH_M_multi(stresses) / self.yield_strength
-        elif isinstance(stresses, tuple):
-            return HMH_M_v(*stresses) / self.yield_strength
-        raise NotImplementedError
+    def _utilization(self, stresses: Union[ndarray, Tuple[ndarray]]) -> ndarray:
+        if isinstance(stresses, tuple):
+            evaluator = self.evaluator.get("vectorized", None)
+            assert isinstance(evaluator, FunctionEvaluator) and evaluator.is_vectorized
+            return evaluator(*stresses) / self.yield_strength
+        else:
+            evaluator = self.evaluator.get("bulk", None)
+            assert isinstance(evaluator, FunctionEvaluator) and evaluator.is_bulk
+            return evaluator(stresses) / self.yield_strength
 
     def utilization(
         self,
@@ -82,16 +108,64 @@ class HuberMisesHenckyFailureTheory:
                 f"Expected a NumPy arrar or a tuple of them, got {type(stresses)}"
             )
 
-        result = None
-        if num_component == 6:
-            result = self._utilization_3d(stresses)
-        elif num_component == 5:
-            result = self._utilization_mindlin(stresses)
-        elif num_component == 3:
-            result = self._utilization_membrane(stresses)
+        if isinstance(self.model_type, Iterable):
+            num_component_expected = self.model_type[0].number_of_stress_variables
         else:
+            num_component_expected = self.model_type.number_of_stress_variables
+        
+        if not num_component == num_component_expected:  # pragma: no cover
             raise ValueError(
-                "The input should either have 6, 5 or 3 stress components."
+                f"Expected {num_component_expected} stress components, got {num_component}"
             )
 
+        result = self._utilization(stresses)
+
         return result if not squeeze else np.squeeze(result)
+
+    def __call__(self, *args, **kwargs) -> Union[ndarray, float]:
+        return self.utilization(*args, **kwargs)
+
+
+class HuberMisesHenckyFailureModel_SP(HuberMisesHenckyFailureModel):
+    """
+    A class to represent the Huber-Mises-Hencky yield condition
+    for plates and shells.
+
+    Parameters
+    ----------
+    yield_strength: float
+    """
+
+    model_type = [
+        MaterialModelType.SHELL_UFLYAND_MINDLIN,
+        MaterialModelType.SHELL_KIRCHHOFF_LOVE,
+    ]
+
+    def __init__(self, *args, evaluator=None, **kwargs):
+        if evaluator is None:
+            evaluator = dict(
+                vectorized=FunctionEvaluator(HMH_S_v, vectorized=True),
+                bulk=FunctionEvaluator(HMH_S_multi, bulk=True),
+            )
+        super().__init__(*args, evaluator=evaluator, **kwargs)
+
+
+class HuberMisesHenckyFailureModel_M(HuberMisesHenckyFailureModel):
+    """
+    A class to represent the Huber-Mises-Hencky yield condition
+    for membranes.
+
+    Parameters
+    ----------
+    yield_strength: float
+    """
+
+    model_type = MaterialModelType.MEMBRANE
+
+    def __init__(self, *args, evaluator=None, **kwargs):
+        if evaluator is None:
+            evaluator = dict(
+                vectorized=FunctionEvaluator(HMH_M_v, vectorized=True),
+                bulk=FunctionEvaluator(HMH_M_multi, bulk=True),
+            )
+        super().__init__(*args, evaluator=evaluator, **kwargs)

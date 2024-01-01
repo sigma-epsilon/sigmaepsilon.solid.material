@@ -3,7 +3,7 @@ from numbers import Number
 
 from numpy import ndarray
 
-from .enums import ModelType
+from .enums import MaterialModelType
 
 
 @runtime_checkable
@@ -13,7 +13,7 @@ class StiffnessLike(Protocol):
     stiffness definition for structures or structural parts.
     """
 
-    model_type: ClassVar[ModelType]
+    model_type: ClassVar[MaterialModelType]
 
     def elastic_stiffness_matrix(
         self, strains: Optional[Union[ndarray, None]] = None

@@ -20,7 +20,7 @@ from ..utils.mindlin import (
     shell_rotation_matrix,
 )
 from ..warnings import SigmaEpsilonMaterialWarning
-from ..enums import ModelType
+from ..enums import MaterialModelType
 
 __all__ = ["MembraneSection"]
 
@@ -109,7 +109,7 @@ class MembraneSection(MindlinShellSection):
     """
 
     layer_class = MembraneLayer
-    model_type = ModelType.MEMBRANE
+    model_type = MaterialModelType.MEMBRANE
 
     def __init__(self, *args, assume_regular: bool = False, **kwargs):
         self._assume_regular = assume_regular
