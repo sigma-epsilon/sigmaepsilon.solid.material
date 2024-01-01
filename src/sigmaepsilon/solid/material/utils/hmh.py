@@ -88,6 +88,26 @@ def HMH_S(strs: ndarray) -> float:
     return np.sqrt(
         s11 ** 2 - s11 * s22 + s22 ** 2 + 3 * s12 ** 2 + 3 * s13 ** 2 + 3 * s23 ** 2
     )
+    
+@vectorize("f8(f8, f8, f8, f8, f8)", target="parallel", cache=__cache)
+def HMH_S_v(s11, s22, s12, s13, s23) -> float:
+    """
+    Evaluates the Huber-Mises-Hencky formula for shells.
+
+    Parameters
+    ----------
+    strs: numpy.ndarray
+        The stresses s11, s22, s12, s13, s23.
+        
+    Example
+    -------
+    >>> from sigmaepsilon.solid.material.utils import HMH_S_v
+    >>> HMH_S_v(1.0, 0.0, 0.0, 0.0, 0.0)
+    1.0
+    """
+    return np.sqrt(
+        s11 ** 2 - s11 * s22 + s22 ** 2 + 3 * s12 ** 2 + 3 * s13 ** 2 + 3 * s23 ** 2
+    )
 
 @njit(nogil=True, cache=__cache)
 def HMH_S_multi(strs: ndarray) -> ndarray:
