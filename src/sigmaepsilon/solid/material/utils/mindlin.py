@@ -31,9 +31,9 @@ def shell_rotation_matrix(angle: float, rad: bool = False) -> ndarray:
     C = np.cos(angle)
     return np.array(
         [
-            [C**2, S**2, 2 * C * S, 0, 0],
-            [S**2, C**2, -2 * C * S, 0, 0],
-            [-C * S, C * S, C**2 - S**2, 0, 0],
+            [C ** 2, S ** 2, 2 * C * S, 0, 0],
+            [S ** 2, C ** 2, -2 * C * S, 0, 0],
+            [-C * S, C * S, C ** 2 - S ** 2, 0, 0],
             [0, 0, 0, C, S],
             [0, 0, 0, -S, C],
         ],
@@ -105,8 +105,8 @@ def shear_factors_MT(ABDS: ndarray, C_126: ndarray, z: ndarray) -> ndarray:
     nL = C_126.shape[0]  # number of layers
 
     # calculate shear factors
-    eta_x = 1 / (A11 * D11 - B11**2)
-    eta_y = 1 / (A22 * D22 - B22**2)
+    eta_x = 1 / (A11 * D11 - B11 ** 2)
+    eta_y = 1 / (A22 * D22 - B22 ** 2)
     shear_factors = np.zeros((nL, 2, 3), dtype=ABDS.dtype)
 
     for iL in prange(nL - 1):
@@ -116,14 +116,14 @@ def shear_factors_MT(ABDS: ndarray, C_126: ndarray, z: ndarray) -> ndarray:
             dsfx = (
                 -eta_x
                 * C_126[iL, 0, 0]
-                * (0.5 * (zi1**2 - zi0**2) * A11 - (zi1 - zi0) * B11)
+                * (0.5 * (zi1 ** 2 - zi0 ** 2) * A11 - (zi1 - zi0) * B11)
             )
             shear_factors[iL, 0, iP + 1 :] += dsfx
             shear_factors[iL + 1 :, 0, :] += dsfx
             dsfy = (
                 -eta_y
                 * C_126[iL, 1, 1]
-                * (0.5 * (zi1**2 - zi0**2) * A22 - (zi1 - zi0) * B22)
+                * (0.5 * (zi1 ** 2 - zi0 ** 2) * A22 - (zi1 - zi0) * B22)
             )
             # these slicings probably cause a race condition
             shear_factors[iL, 1, iP + 1 :] += dsfy
@@ -136,13 +136,13 @@ def shear_factors_MT(ABDS: ndarray, C_126: ndarray, z: ndarray) -> ndarray:
         dsfx = (
             -eta_x
             * C_126[iL, 0, 0]
-            * (0.5 * (zi1**2 - zi0**2) * A11 - (zi1 - zi0) * B11)
+            * (0.5 * (zi1 ** 2 - zi0 ** 2) * A11 - (zi1 - zi0) * B11)
         )
         shear_factors[iL, 0, iP + 1 :] += dsfx
         dsfy = (
             -eta_y
             * C_126[iL, 1, 1]
-            * (0.5 * (zi1**2 - zi0**2) * A22 - (zi1 - zi0) * B22)
+            * (0.5 * (zi1 ** 2 - zi0 ** 2) * A22 - (zi1 - zi0) * B22)
         )
         shear_factors[iL, 1, iP + 1 :] += dsfy
     shear_factors[iL, :, 2] = 0.0
@@ -164,8 +164,8 @@ def shear_factors_ST(ABDS: ndarray, C_126: ndarray, z: ndarray):
     nL = z.shape[0]  # number of layers
 
     # calculate shear factors
-    eta_x = 1 / (A11 * D11 - B11**2)
-    eta_y = 1 / (A22 * D22 - B22**2)
+    eta_x = 1 / (A11 * D11 - B11 ** 2)
+    eta_y = 1 / (A22 * D22 - B22 ** 2)
     shear_factors = np.zeros((nL, 2, 3), dtype=ABDS.dtype)
 
     for iL in range(nL):
@@ -191,7 +191,7 @@ def shear_factors_ST(ABDS: ndarray, C_126: ndarray, z: ndarray):
     return shear_factors
 
 
-#@njit(nogil=True, parallel=True, cache=__cache)
+# @njit(nogil=True, parallel=True, cache=__cache)
 def shear_correction_data(
     ABDS: ndarray, C_126: ndarray, C_45: ndarray, bounds: ndarray
 ) -> Tuple[ndarray, ndarray]:
@@ -211,7 +211,7 @@ def shear_correction_data(
     # compile shear factors
     sf = np.zeros((nL, 2, 3), dtype=ABDS.dtype)
     for iL in prange(nL):
-        monoms_inv = inv(np.array([[1, z, z**2] for z in z[iL]], dtype=ABDS.dtype))
+        monoms_inv = inv(np.array([[1, z, z ** 2] for z in z[iL]], dtype=ABDS.dtype))
         sf[iL, 0] = monoms_inv @ shear_factors[iL, 0]
         sf[iL, 1] = monoms_inv @ shear_factors[iL, 1]
 
@@ -236,11 +236,11 @@ def shear_correction_data(
                 (bounds[iL, 1] + bounds[iL, 0])
                 + gP[iG] * (bounds[iL, 1] - bounds[iL, 0])
             )
-            monoms = np.array([1, ziG, ziG**2], dtype=ABDS.dtype)
+            monoms = np.array([1, ziG, ziG ** 2], dtype=ABDS.dtype)
             sfx = np.dot(monoms, sf[iL, 0])
             sfy = np.dot(monoms, sf[iL, 1])
-            pot_p_x += 0.5 * (sfx**2) * dJ * gW[iG] / Gxi
-            pot_p_y += 0.5 * (sfy**2) * dJ * gW[iG] / Gyi
+            pot_p_x += 0.5 * (sfx ** 2) * dJ * gW[iG] / Gxi
+            pot_p_y += 0.5 * (sfy ** 2) * dJ * gW[iG] / Gyi
     kx = pot_c_x / pot_p_x
     ky = pot_c_y / pot_p_y
 
@@ -275,5 +275,5 @@ def stiffness_data(
 
 @njit(nogil=True, cache=__cache)
 def z_to_shear_factors(z: float, sfx: float, sfy: float) -> Tuple[float, float]:
-    monoms = np.array([1, z, z**2], dtype=sfx.dtype)
+    monoms = np.array([1, z, z ** 2], dtype=sfx.dtype)
     return np.dot(monoms, sfx), np.dot(monoms, sfy)

@@ -79,8 +79,8 @@ class MindlinShellLayer(SurfaceLayer):
         tmin = self._tmin
         tmax = self._tmax
         A = C[:3, :3] * (tmax - tmin)
-        B = (1 / 2) * C[:3, :3] * (tmax**2 - tmin**2)
-        D = (1 / 3) * C[:3, :3] * (tmax**3 - tmin**3)
+        B = (1 / 2) * C[:3, :3] * (tmax ** 2 - tmin ** 2)
+        D = (1 / 3) * C[:3, :3] * (tmax ** 3 - tmin ** 3)
         S = C[3:, 3:] * (tmax - tmin)
         ABDS = np.zeros([8, 8], dtype=float)
         ABDS[0:3, 0:3] = A
@@ -95,7 +95,7 @@ class MindlinShellLayer(SurfaceLayer):
         Prepares data for continuous interpolation of shear factors. Should
         be called if shear factors are already set.
         """
-        coeff_inv = inv(np.array([[1, z, z**2] for z in self._zi]))
+        coeff_inv = inv(np.array([[1, z, z ** 2] for z in self._zi]))
         self._sfx = np.matmul(coeff_inv, self._shear_factors_x)
         self._sfy = np.matmul(coeff_inv, self._shear_factors_y)
 
@@ -117,15 +117,15 @@ class MindlinShellLayer(SurfaceLayer):
         the thickness.
         """
         z0, z1, z2 = self._zi
-        z = np.array([[1, z0, z0**2], [1, z1, z1**2], [1, z2, z2**2]])
+        z = np.array([[1, z0, z0 ** 2], [1, z1, z1 ** 2], [1, z2, z2 ** 2]])
         a, b, c = inv(z) @ np.array(data)
-        return lambda z: a + b * z + c * z**2
+        return lambda z: a + b * z + c * z ** 2
 
 
 class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
     """
     A class for Ufluand-Mindlin shells.
-    
+
     Examples
     --------
     >>> from sigmaepsilon.solid.material import MindlinShellSection as Section
@@ -142,7 +142,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
     >>> frame = ReferenceFrame(dim=3)
     >>> tensor = ElasticityTensor(
     ...    hooke, frame=frame, tensorial=False, yield_strength=yield_strength
-    ... ) 
+    ... )
     >>> ...
     >>> section = Section(
     ...     layers=[
@@ -154,6 +154,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
     >>> section.elastic_stiffness_matrix().shape
     (8, 8)
     """
+
     layer_class = MindlinShellLayer
     model_type = ModelType.SHELL_UFLYAND_MINDLIN
 
@@ -190,8 +191,8 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         alpha_y = ABDS_inv[1, 4]
         beta_y = ABDS_inv[4, 4]
 
-        eta_x = 1 / (A11 * D11 - B11**2)
-        eta_y = 1 / (A22 * D22 - B22**2)
+        eta_x = 1 / (A11 * D11 - B11 ** 2)
+        eta_y = 1 / (A22 * D22 - B22 ** 2)
         alpha_x = -B11 * eta_x
         beta_x = A11 * eta_x
         alpha_y = -B22 * eta_y
@@ -249,8 +250,8 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
             Gyi = C[-1, -1]
             for loc, weight in zip(gP, gW):
                 sfx, sfy = layer._loc_to_shear_factors(loc)
-                pot_p_x += 0.5 * (sfx**2) * dJ * weight / Gxi
-                pot_p_y += 0.5 * (sfy**2) * dJ * weight / Gyi
+                pot_p_x += 0.5 * (sfx ** 2) * dJ * weight / Gxi
+                pot_p_y += 0.5 * (sfy ** 2) * dJ * weight / Gyi
         kx = pot_c_x / pot_p_x
         ky = pot_c_y / pot_p_y
 
@@ -298,7 +299,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
             Point per layer. Default is None.
         """
         return self._postprocess(*args, mode="stress", **kwargs)
-    
+
     def utilization(self, *args, **kwargs) -> Union[Number, Iterable[Number]]:
         """
         A function that returns a positive number. If the value is 1.0, it means that the material
@@ -335,10 +336,10 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         with minimal experimentation.
         """
         return self._postprocess(*args, mode="u", **kwargs)
-    
+
     def calculate_equivalent_stress(self, *args, **kwargs) -> ndarray:
         """
-        Calculates equivalent material stresses for input internal forces or strains 
+        Calculates equivalent material stresses for input internal forces or strains
         according to the built-in failure criteria and returns it as a NumPy array.
 
         Either strains or stresses must be provided.
@@ -361,7 +362,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         ppl: int, Optional
             Point per layer. Default is None.
         """
-        return self._postprocess(*args,  mode="eq", **kwargs)
+        return self._postprocess(*args, mode="eq", **kwargs)
 
     def _postprocess(
         self,
@@ -408,23 +409,23 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
             'u': the function returns utilizations
         """
         layers: Iterable[MindlinShellLayer] = self.layers
-        
+
         return_stresses = mode == "stress"
         return_eq_stresses = mode == "eq"
         return_utilization = mode == "u"
-        
+
         if z is None:
             num_layers = len(layers)
             num_data = strains.shape[0]
             num_point_per_layer = len(self.layer_class.__loc__) if ppl is None else ppl
             locations = np.linspace(-1.0, 1.0, num_point_per_layer)
-            
+
             z, _layers = [], []
             for layer in layers:
                 for loc in locations:
                     _layers.append(layer)
                     z.append(layer._loc_to_z(loc))
-        
+
             result = self._postprocess_standard_form(
                 strains=strains,
                 stresses=stresses,
@@ -435,15 +436,17 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
                 layers=_layers,
                 **kwargs
             )
-            
+
             if len(result.shape) == 2:
-                assert (return_eq_stresses or return_utilization)
+                assert return_eq_stresses or return_utilization
                 result = result.reshape(num_data, num_layers, num_point_per_layer)
             else:
                 assert return_stresses
                 num_X = result.shape[-1]
-                result = result.reshape(num_data, num_layers, num_point_per_layer, num_X)
-                
+                result = result.reshape(
+                    num_data, num_layers, num_point_per_layer, num_X
+                )
+
             return np.squeeze(result) if squeeze else result
         else:
             return self._postprocess_standard_form(

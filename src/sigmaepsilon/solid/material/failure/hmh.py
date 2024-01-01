@@ -78,9 +78,11 @@ class HuberMisesHenckyFailureTheory:
         elif isinstance(stresses, tuple):
             num_component = len(stresses)
         else:
-            raise TypeError(f"Expected a NumPy arrar or a tuple of them, got {type(stresses)}")
+            raise TypeError(
+                f"Expected a NumPy arrar or a tuple of them, got {type(stresses)}"
+            )
 
-        result=None
+        result = None
         if num_component == 6:
             result = self._utilization_3d(stresses)
         elif num_component == 5:
@@ -88,6 +90,8 @@ class HuberMisesHenckyFailureTheory:
         elif num_component == 3:
             result = self._utilization_membrane(stresses)
         else:
-            raise ValueError("The input should either have 6, 5 or 3 stress components.")
+            raise ValueError(
+                "The input should either have 6, 5 or 3 stress components."
+            )
 
         return result if not squeeze else np.squeeze(result)

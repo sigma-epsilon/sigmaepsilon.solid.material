@@ -131,7 +131,7 @@ class SurfaceSection(Generic[T]):
         Returns the layout.
         """
         return self._layout
-    
+
     @property
     def layers(self) -> Iterable[T]:
         """

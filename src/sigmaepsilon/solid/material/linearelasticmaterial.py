@@ -10,9 +10,8 @@ class LinearElasticMaterial:
     """
     A class for linear elastic materials.
     """
-    def __init__(
-        self, stiffness: StiffnessLike, yield_strength: Number = np.Infinity
-    ):
+
+    def __init__(self, stiffness: StiffnessLike, yield_strength: Number = np.Infinity):
         self._stiffness = stiffness
         self._yield_strength = yield_strength
 

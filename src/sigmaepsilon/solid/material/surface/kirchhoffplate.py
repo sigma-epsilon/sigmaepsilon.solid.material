@@ -60,7 +60,7 @@ class KirchhoffPlateSection(MindlinShellSection):
     """
 
     model_type = ModelType.PLATE_KIRCHHOFF_LOVE
-    
+
     @MindlinShellSection.eccentricity.setter
     def eccentricity(self, _: Number) -> None:
         raise Exception(
@@ -89,7 +89,7 @@ class KirchhoffPlateSection(MindlinShellSection):
         self._ABDS = (self._ABDS + self._ABDS.T) / 2
         self._SDBA = np.linalg.inv(self._ABDS)
         return self._ABDS
-            
+
     def _postprocess_standard_form(
         self,
         *,
@@ -102,7 +102,7 @@ class KirchhoffPlateSection(MindlinShellSection):
         mode: Optional[str] = "stress",
         layers: Optional[Union[Iterable[MindlinShellLayer], None]] = None,
     ) -> Union[Number, Iterable[Number]]:
-        
+
         if strains is None:
             assert isinstance(stresses, ndarray)
             stresses = atleastnd(stresses, 2, front=True)
@@ -145,9 +145,7 @@ class KirchhoffPlateSection(MindlinShellSection):
             C = layer.material_elastic_stiffness_matrix()
             material_stresses = np.zeros((num_data, 5), dtype=float)
 
-            material_stresses[:, :3] = (
-                C[:3, :3] @ (z[iz] * strains[:, :3]).T
-            ).T
+            material_stresses[:, :3] = (C[:3, :3] @ (z[iz] * strains[:, :3]).T).T
 
             sfx, sfy = z_to_shear_factors(z[iz], layer._sfx, layer._sfy)
             material_stresses[:, 3] = sfx * stresses[:, -2]

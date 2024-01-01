@@ -15,7 +15,7 @@ def HMH_M(strs: ndarray) -> float:
     >>> from sigmaepsilon.solid.material.utils import HMH_M
     >>> HMH_M((1.0, 0.0, 0.0))
     1.0
-    
+
     Parameters
     ----------
     strs: numpy.ndarray
@@ -33,9 +33,9 @@ def HMH_M_multi(strs: ndarray) -> ndarray:
     Parameters
     ----------
     strs: numpy.ndarray
-        2d array of stresses for several points. The stresses 
+        2d array of stresses for several points. The stresses
         in the rows are expected in the order s11, s22, s12.
-        
+
     Example
     -------
     >>> from sigmaepsilon.solid.material.utils import HMH_M_multi
@@ -59,7 +59,7 @@ def HMH_M_v(s11, s22, s12):
     ----------
     strs: numpy.ndarray
         The stresses s11, s22, s12.
-        
+
     >>> from sigmaepsilon.solid.material.utils import HMH_M_v
     >>> import numpy as np
     >>> HMH_M_v(*(np.random.rand(10),)*3).shape
@@ -77,7 +77,7 @@ def HMH_S(strs: ndarray) -> float:
     ----------
     strs: numpy.ndarray
         The stresses s11, s22, s12, s13, s23.
-        
+
     Example
     -------
     >>> from sigmaepsilon.solid.material.utils import HMH_S
@@ -88,7 +88,8 @@ def HMH_S(strs: ndarray) -> float:
     return np.sqrt(
         s11 ** 2 - s11 * s22 + s22 ** 2 + 3 * s12 ** 2 + 3 * s13 ** 2 + 3 * s23 ** 2
     )
-    
+
+
 @vectorize("f8(f8, f8, f8, f8, f8)", target="parallel", cache=__cache)
 def HMH_S_v(s11, s22, s12, s13, s23) -> float:
     """
@@ -98,7 +99,7 @@ def HMH_S_v(s11, s22, s12, s13, s23) -> float:
     ----------
     strs: numpy.ndarray
         The stresses s11, s22, s12, s13, s23.
-        
+
     Example
     -------
     >>> from sigmaepsilon.solid.material.utils import HMH_S_v
@@ -109,6 +110,7 @@ def HMH_S_v(s11, s22, s12, s13, s23) -> float:
         s11 ** 2 - s11 * s22 + s22 ** 2 + 3 * s12 ** 2 + 3 * s13 ** 2 + 3 * s23 ** 2
     )
 
+
 @njit(nogil=True, cache=__cache)
 def HMH_S_multi(strs: ndarray) -> ndarray:
     """
@@ -117,9 +119,9 @@ def HMH_S_multi(strs: ndarray) -> ndarray:
     Parameters
     ----------
     strs: numpy.ndarray
-        2d array of stresses for several points. The stresses 
+        2d array of stresses for several points. The stresses
         in the rows are expected in the order s11, s22, s12, s13, s23.
-        
+
     Example
     -------
     >>> from sigmaepsilon.solid.material.utils import HMH_S_multi

@@ -55,7 +55,7 @@ class MembraneLayer(MindlinShellLayer):
 
         if not full_shape:
             Cm = Cm[:3, :3]
-            
+
         return inv(T) @ Cm @ R @ T @ inv(R)
 
     def rotation_matrix(self, shape: Optional[Union[str, None]] = "full") -> ndarray:
@@ -75,10 +75,10 @@ class MembraneLayer(MindlinShellLayer):
 class MembraneSection(MindlinShellSection):
     """
     A class for membranes.
-     
-    It is a subclass of class::`sigmaepsilon.solid.material.surface.SurfaceSection`, and usage is 
+
+    It is a subclass of class::`sigmaepsilon.solid.material.surface.SurfaceSection`, and usage is
     almost identical, see there for more details.
-    
+
     Examples
     --------
     >>> from sigmaepsilon.solid.material import MembraneSection as Section
@@ -95,7 +95,7 @@ class MembraneSection(MindlinShellSection):
     >>> frame = ReferenceFrame(dim=3)
     >>> tensor = ElasticityTensor(
     ...    hooke, frame=frame, tensorial=False, yield_strength=yield_strength
-    ... ) 
+    ... )
     >>> ...
     >>> section = Section(
     ...     layers=[
@@ -151,7 +151,7 @@ class MembraneSection(MindlinShellSection):
         self._ABDS = (self._ABDS + self._ABDS.T) / 2
         self._SDBA = np.linalg.inv(self._ABDS)
         return self._ABDS
-            
+
     def _postprocess_standard_form(
         self,
         *,
@@ -163,7 +163,7 @@ class MembraneSection(MindlinShellSection):
         mode: Optional[str] = "stress",
         layers: Optional[Union[Iterable[MindlinShellLayer], None]] = None,
     ) -> Union[Number, Iterable[Number]]:
-        
+
         if strains is None:
             assert isinstance(stresses, ndarray)
             strains = (self.SDBA @ stresses.T).T

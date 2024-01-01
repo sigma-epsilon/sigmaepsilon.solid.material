@@ -65,12 +65,12 @@ class KirchhoffShellSection(MindlinShellSection):
         """
         self._set_layers()
         ABDS = np.zeros(self.layer_class.__shape__)
-        self._elastic_stiffness_matrix(ABDS)  
+        self._elastic_stiffness_matrix(ABDS)
         self._ABDS = ascont(ABDS[:6, :6])
         self._ABDS = (self._ABDS + self._ABDS.T) / 2
         self._SDBA = np.linalg.inv(self._ABDS)
         return self._ABDS
-            
+
     def _postprocess_standard_form(
         self,
         *,
@@ -83,7 +83,7 @@ class KirchhoffShellSection(MindlinShellSection):
         mode: Optional[str] = "stress",
         layers: Optional[Union[Iterable[MindlinShellLayer], None]] = None,
     ) -> Union[Number, Iterable[Number]]:
-        
+
         if strains is None:
             assert isinstance(stresses, ndarray)
             stresses = atleastnd(stresses, 2, front=True)

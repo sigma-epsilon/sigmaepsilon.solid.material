@@ -8,6 +8,7 @@ from sigmaepsilon.math import clip1d
 
 __cache = True
 
+
 def layers_of_points_1d(points: np.ndarray, bounds: np.ndarray):
     nL = bounds.shape[0]
     bins = np.zeros((nL + 1,), dtype=points.dtype)
@@ -16,7 +17,7 @@ def layers_of_points_1d(points: np.ndarray, bounds: np.ndarray):
     return clip1d(np.digitize(points, bins) - 1, 0, nL - 1)
 
 
-#@njit(nogil=True, cache=__cache)
+# @njit(nogil=True, cache=__cache)
 def layers_of_points_3d(points: np.ndarray, bounds: np.ndarray):
     nL = bounds.shape[0]
     bins = np.zeros((nL + 1,), dtype=points.dtype)

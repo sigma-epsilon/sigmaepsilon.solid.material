@@ -17,7 +17,7 @@ from .mindlin import (
 __cache = True
 
 
-#@njit(nogil=True, parallel=True, cache=__cache)
+# @njit(nogil=True, parallel=True, cache=__cache)
 def _pproc_Mindlin_3D(
     ABDS: np.ndarray,
     sfx: np.ndarray,
@@ -32,7 +32,7 @@ def _pproc_Mindlin_3D(
 ):
     nRHS, nP, _ = e_126_n.shape
     is_3d = len(points.shape) == 2 and points.shape[-1] == 3
-    
+
     if is_3d:
         layerinds = layers_of_points_3d(points, bounds)
     else:
@@ -50,10 +50,10 @@ def _pproc_Mindlin_3D(
             zP = points[iP, 2]
         else:
             zP = points[iP]
-            
+
         lP = layerinds[iP]
         sfxz, sfyz = z_to_shear_factors(zP, sfx[lP, :], sfy[lP, :])
-        
+
         for iRHS in prange(nRHS):
             e_126_m[iRHS, iP] = zP * c_126[iRHS, iP]
             s_126_n[iRHS, iP] = C_126[lP] @ e_126_n[iRHS, iP]
@@ -214,7 +214,7 @@ def pproc_Mindlin_3D(
     shear_factors: Optional[Iterable] = None,
     **kwargs,
 ) -> Tuple[ndarray, ndarray]:
-    """ 
+    """
     Calculates stresses for Uflyand-Mindlin plates. The function can handle multiple
     left and right hand sides.
     """
@@ -246,7 +246,7 @@ def pproc_Mindlin_3D(
             angles = atleast2d(angles)
         else:
             angles = [atleast1d(angles[i]) for i in range(len(angles))]
-        
+
         for iLHS in range(len(angles)):
             C_126_g[iLHS], C_45_g[iLHS] = material_stiffness_matrices(
                 C_126[iLHS], C_45[iLHS], angles[iLHS]
@@ -282,7 +282,7 @@ def pproc_Mindlin_3D(
     for i in range(nLHS):
         sfx_i = ascont(shear_factors[i][:, 0, :])
         sfy_i = ascont(shear_factors[i][:, 1, :])
-        
+
         if nX == 8:
             e_126_n_i = ascont(strains2d[i, :, :, :3])
             c_126_i = ascont(strains2d[i, :, :, 3:6])
@@ -291,7 +291,7 @@ def pproc_Mindlin_3D(
             e_126_n_i = np.zeros((nRHS, nP, 3), dtype=float)
             c_126_i = ascont(strains2d[i, :, :, :3])
             e_45_i = ascont(strains2d[i, :, :, 3:])
-            
+
         (
             s_126_n[i],
             s_126_m[i],
