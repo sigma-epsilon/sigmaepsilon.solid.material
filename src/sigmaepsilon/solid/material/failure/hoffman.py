@@ -61,6 +61,10 @@ class HoffmanFailureCriterion:
     )
 
     number_of_stress_arguments: ClassVar[int] = 6
+    
+    @property
+    def number_of_strength_parameters(self) -> int:
+        return len(self.__class__.principal_model_params) 
 
     def __init__(
         self,
