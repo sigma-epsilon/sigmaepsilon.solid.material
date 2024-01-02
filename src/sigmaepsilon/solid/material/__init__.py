@@ -10,9 +10,12 @@ from .stresstensor import CauchyStressTensor
 from .straintensor import SmallStrainTensor
 from .elasticitytensor import ElasticityTensor
 from .failure import (
-    HuberMisesHenckyFailureModel,
-    HuberMisesHenckyFailureModel_SP,
-    HuberMisesHenckyFailureModel_M,
+    HuberMisesHenckyFailureCriterion,
+    HuberMisesHenckyFailureCriterion_SP,
+    HuberMisesHenckyFailureCriterion_M,
+    HoffmanFailureCriterion,
+    HoffmanFailureCriterion_SP,
+    HoffmanFailureCriterion_M,
 )
 
 __all__ = [
@@ -25,7 +28,10 @@ __all__ = [
     "CauchyStressTensor",
     "SmallStrainTensor",
     "ElasticityTensor",
-    "HuberMisesHenckyFailureModel",
-    "HuberMisesHenckyFailureModel_SP",
-    "HuberMisesHenckyFailureModel_M",
+    "HuberMisesHenckyFailureCriterion",
+    "HuberMisesHenckyFailureCriterion_SP",
+    "HuberMisesHenckyFailureCriterion_M",
+    "HoffmanFailureCriterion",
+    "HoffmanFailureCriterion_SP",
+    "HoffmanFailureCriterion_M",
 ]

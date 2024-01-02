@@ -1,11 +1,19 @@
 from .hmh import (
-    HuberMisesHenckyFailureModel,
-    HuberMisesHenckyFailureModel_SP,
-    HuberMisesHenckyFailureModel_M,
+    HuberMisesHenckyFailureCriterion,
+    HuberMisesHenckyFailureCriterion_SP,
+    HuberMisesHenckyFailureCriterion_M,
+)
+from .hoffman import (
+    HoffmanFailureCriterion,
+    HoffmanFailureCriterion_SP,
+    HoffmanFailureCriterion_M,
 )
 
 __all__ = [
-    "HuberMisesHenckyFailureModel",
-    "HuberMisesHenckyFailureModel_SP",
-    "HuberMisesHenckyFailureModel_M",
+    "HuberMisesHenckyFailureCriterion",
+    "HuberMisesHenckyFailureCriterion_SP",
+    "HuberMisesHenckyFailureCriterion_M",
+    "HoffmanFailureCriterion",
+    "HoffmanFailureCriterion_SP",
+    "HoffmanFailureCriterion_M",
 ]

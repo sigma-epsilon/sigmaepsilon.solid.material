@@ -19,13 +19,13 @@ from ..evaluator import FunctionEvaluator
 
 
 __all__ = [
-    "HuberMisesHenckyFailureModel",
-    "HuberMisesHenckyFailureModel_SP",
-    "HuberMisesHenckyFailureModel_M",
+    "HuberMisesHenckyFailureCriterion",
+    "HuberMisesHenckyFailureCriterion_SP",
+    "HuberMisesHenckyFailureCriterion_M",
 ]
 
 
-class HuberMisesHenckyFailureModel:
+class HuberMisesHenckyFailureCriterion:
     """
     A class to represent the Huber-Mises-Hencky yield condition.
 
@@ -79,9 +79,14 @@ class HuberMisesHenckyFailureModel:
             return evaluator(*stresses) / self.yield_strength
         else:
             evaluator = self.evaluator.get("bulk", None)
-            assert isinstance(evaluator, FunctionEvaluator) and evaluator.is_bulk
-            return evaluator(stresses) / self.yield_strength
-
+            if (isinstance(evaluator, FunctionEvaluator) and evaluator.is_bulk):
+                return evaluator(stresses) / self.yield_strength
+            elif (isinstance(evaluator, FunctionEvaluator) and evaluator.is_vectorized):
+                stresses = [stresses[:, i] for i in range(stresses.shape[-1])]
+                return evaluator(*stresses) / self.yield_strength
+            else:  # pragma: no cover
+                raise NotImplementedError
+            
     def utilization(
         self,
         *,
@@ -126,7 +131,7 @@ class HuberMisesHenckyFailureModel:
         return self.utilization(*args, **kwargs)
 
 
-class HuberMisesHenckyFailureModel_SP(HuberMisesHenckyFailureModel):
+class HuberMisesHenckyFailureCriterion_SP(HuberMisesHenckyFailureCriterion):
     """
     A class to represent the Huber-Mises-Hencky yield condition
     for plates and shells.
@@ -150,7 +155,7 @@ class HuberMisesHenckyFailureModel_SP(HuberMisesHenckyFailureModel):
         super().__init__(*args, evaluator=evaluator, **kwargs)
 
 
-class HuberMisesHenckyFailureModel_M(HuberMisesHenckyFailureModel):
+class HuberMisesHenckyFailureCriterion_M(HuberMisesHenckyFailureCriterion):
     """
     A class to represent the Huber-Mises-Hencky yield condition
     for membranes.
