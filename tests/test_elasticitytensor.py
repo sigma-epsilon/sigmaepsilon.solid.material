@@ -143,23 +143,7 @@ class TestElasticityTensor(SolidMaterialTestCase):
         self.assertEqual(tensor.calculate_stresses(np.random.rand(10, 6)).shape, (10, 6))
         
         strains = tensor.calculate_strains(np.array([yield_strength, 0.0, 0.0, 0.0, 0.0, 0.0]))
-        util = tensor.utilization(strains) * 100
-        self.assertTrue(np.isclose(util, 100.0))
-        
         strains = tensor.calculate_strains(np.eye(6) * yield_strength)
-        utils = tensor.utilization(strains=strains) * 100
-        self.assertTrue(np.isclose(utils[0], 100.0))
-        self.assertTrue(np.isclose(utils[1], 100.0))
-        self.assertTrue(np.isclose(utils[2], 100.0))
-        
-        value_a = tensor.calculate_equivalent_stress(np.array([0.002, 0.0, 0.0, 0.0, 0.0, 0.0]))
-        value_b = tensor.calculate_equivalent_stress(np.array([0.0, 0.002, 0.0, 0.0, 0.0, 0.0]))
-        self.assertTrue(np.isclose(value_a, value_b))
-        
-        # simple evaluations
-        tensor.utilization(2*np.random.rand(10, 6)/1000)
-        tensor.utilization(*(2*np.random.rand(10)/1000 for _ in range(6)))
-        tensor.utilization(*(2*np.random.rand(10)/1000 for _ in range(6))) 
 
 if __name__ == "__main__":
     unittest.main()

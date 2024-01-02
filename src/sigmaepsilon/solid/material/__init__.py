@@ -17,6 +17,7 @@ from .failure import (
     HoffmanFailureCriterion_SP,
     HoffmanFailureCriterion_M,
 )
+from .linearelasticmaterial import LinearElasticMaterial
 
 __all__ = [
     "BernoulliFrameSection",
@@ -34,4 +35,5 @@ __all__ = [
     "HoffmanFailureCriterion",
     "HoffmanFailureCriterion_SP",
     "HoffmanFailureCriterion_M",
+    "LinearElasticMaterial"
 ]

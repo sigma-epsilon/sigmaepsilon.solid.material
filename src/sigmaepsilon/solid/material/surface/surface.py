@@ -5,11 +5,15 @@ from abc import abstractmethod
 import numpy as np
 from numpy import ndarray
 
-from ..proto import BaseMaterialLike
+from ..proto import MaterialLike, StiffnessLike, FailureLike
 from ..elasticitytensor import ElasticityTensor
 from ..enums import MaterialModelType
 
 __all__ = ["SurfaceSection"]
+
+ShellMaterialLike = Union[
+    MaterialLike, StiffnessLike, FailureLike, ElasticityTensor, None
+]
 
 
 class SurfaceLayer:
@@ -27,23 +31,28 @@ class SurfaceLayer:
         *,
         angle: Optional[Number] = 0.0,
         thickness: Optional[Number] = 1.0,
-        material: Optional[Union[BaseMaterialLike, ndarray, None]] = None,
+        material: Optional[Union[MaterialLike, None]] = None,
     ):
         super().__init__()
         self._angle = angle
         self._thickness = thickness
-        self._material = material
+        self._material: MaterialLike = material
         self._tmin = -self._thickness / 2
         self._tmax = self._thickness / 2
         self._zi = [self._loc_to_z(loc) for loc in self.__loc__]
 
     @property
-    def material(self) -> Union[BaseMaterialLike, ndarray, None]:
+    def material(self) -> ShellMaterialLike:
         return self._material
 
     @material.setter
-    def material(self, value: Union[BaseMaterialLike, ndarray, None]) -> None:
-        if isinstance(value, (BaseMaterialLike, ndarray)):
+    def material(
+        self, value: Union[ShellMaterialLike, Iterable[ShellMaterialLike]]
+    ) -> None:
+        """
+        Sets the material of some attribute of it.
+        """
+        if isinstance(value, (MaterialLike, ndarray, ElasticityTensor)):
             self._material = value
         else:
             if value is not None:
@@ -54,10 +63,13 @@ class SurfaceLayer:
     def material_stiffness_matrix(self) -> ndarray:
         if isinstance(self.material, ElasticityTensor):
             return self.material.contracted_components()
-        elif isinstance(self.material, BaseMaterialLike):
-            return self.material.elastic_stiffness_matrix()
         elif isinstance(self.material, ndarray):
             return self.material
+        elif isinstance(self.material, MaterialLike):
+            if isinstance(self.material.stiffness, ndarray):
+                return self.material.stiffness
+            else:
+                return self.material.stiffness.elastic_stiffness_matrix()
         raise ValueError("Invaluid material")  # pragma: no cover
 
     @material_stiffness_matrix.setter
@@ -112,6 +124,9 @@ class SurfaceSection(Generic[T]):
 
     layer_class: T = SurfaceLayer
     model_type: MaterialModelType = MaterialModelType.DEFAULT
+    material_class: MaterialLike = None
+    failure_class: FailureLike = None
+    number_of_stress_components: int = None
 
     def __init__(
         self,
@@ -224,7 +239,7 @@ class SurfaceSection(Generic[T]):
     @staticmethod
     def Material(**kwargs) -> ndarray:
         """
-        Ought to return the material represented as a 2d NumPy array.
+        Ought to return a material compatible with the model.
         """
         raise NotImplementedError
 

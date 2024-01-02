@@ -74,12 +74,22 @@ class HoffmanFailureCriterion:
         **kwargs,
     ):
         n_params = len(self.__class__.principal_model_params)
-        if params is None and len(kwargs == n_params):
-            if allinkwargs(self.__class__.principal_model_params, **kwargs):
-                source = getallfromkwargs(
-                    self.__class__.principal_model_params, **kwargs
+
+        if params is None:
+            if len(kwargs == n_params) and allinkwargs(
+                self.__class__.principal_model_params, **kwargs
+            ):
+                params = tuple(
+                    getallfromkwargs(self.__class__.principal_model_params, **kwargs)
                 )
-                params = tuple(source)
+            else:
+                params = tuple(
+                    getallfromkwargs(
+                        self.__class__.principal_model_params,
+                        default=np.Infinity,
+                        **kwargs,
+                    )
+                )
 
         if params is None:
             raise ValueError("Invalid specification")

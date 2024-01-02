@@ -1,4 +1,4 @@
-from typing import Union, Optional, Iterable, Tuple
+from typing import Union, Optional
 from numbers import Number
 
 from numpy import ndarray
@@ -9,7 +9,6 @@ from sigmaepsilon.math.linalg.exceptions import TensorShapeMismatchError
 
 from .utils.imap import _map_3x3x3x3_to_6x6, _map_6x6_to_3x3x3x3
 from .utils.utils import _has_elastic_params, elastic_stiffness_matrix
-from .utils.hmh import HMH_3d, HMH_3d_multi, HMH_3d_v
 
 __all__ = ["ElasticityTensor"]
 
@@ -24,6 +23,8 @@ class ElasticityTensor(Tensor4):
         The maximum stress the material can sustain without experiencing
         relevant losses in performance. Default is `np.Infinity`.
     """
+    
+    number_of_stress_components = 6
 
     def __init__(self, *args, yield_strength: Optional[Number] = np.Infinity, **kwargs):
         self._input_params = None
@@ -138,99 +139,6 @@ class ElasticityTensor(Tensor4):
         enable the instance to be cosidered as a valid material rule.
         """
         return self.contracted_components()
-
-    def utilization(
-        self,
-        *args,
-        strains: Optional[Union[ndarray, None]] = None,
-        stresses: Optional[Union[ndarray, None]] = None,
-    ) -> Union[Number, Iterable[Number]]:
-        """
-        A function that returns a positive number. If the value is 1.0, it means that the material
-        is at peak performance and any further increase in the loads is very likely to lead to failure
-        of the material.
-
-        The strains or stresses are expected in the order
-
-            s11, s22, s33, s23, s13, s12 = sxx, syy, szz, syz, sxz, sxy
-
-        which is the classical unfolding of the 2nd-order Cauchy stiffness tensor.
-
-        Parameters
-        ----------
-        strains: numpy.ndarray
-            A 1d or 2d array of strain components. If it is a 2d array, it is expected that
-            `strains[i]` has the meaning of the i-th selection of strain components, therefore
-            the length of the second axis must be 6.
-
-        Returns
-        -------
-        Number or Iterable[Number]
-            A single utilization value as a float or several as a 1d array.
-        """
-        return (
-            self.calculate_equivalent_stress(*args, strains=strains, stresses=stresses)
-            / self.yield_strength
-        )
-
-    def calculate_equivalent_stress(
-        self,
-        *args,
-        strains: Optional[Union[ndarray, None]] = None,
-        stresses: Optional[Union[ndarray, None]] = None,
-    ) -> ndarray:
-        """
-        A function that calculates the equivalent stress.
-
-        The strains are expected in the order
-
-            s11, s22, s33, s23, s13, s12 = sxx, syy, szz, syz, sxz, sxy
-
-        which is the classical unfolding of the 2nd-order Cauchy stiffness tensor.
-
-        Parameters
-        ----------
-        strains: numpy.ndarray
-            A 1d or 2d array of strain components. If it is a 2d array, it is expected that
-            `strains[i]` has the meaning of the i-th selection of strain components, therefore
-            the length of the second axis must be 6.
-
-        Returns
-        -------
-        Number or Iterable[Number]
-            A single value as a float or several as a 1d array.
-        """
-        if strains is None and stresses is None:
-            if len(args) == 1:
-                if isinstance(args[0], ndarray):
-                    return self.calculate_equivalent_stress(strains=args[0])
-            elif len(args) == 6:
-                return self.calculate_equivalent_stress(strains=args)
-
-        if isinstance(strains, Tuple):
-            if len(strains) == 6:
-                stresses = self.contracted_components() @ np.stack(strains, axis=0)
-                s11, s22, s33, s23, s13, s12 = stresses
-                return HMH_3d_v(s11, s22, s33, s23, s13, s12)
-
-            raise ValueError(
-                (
-                    "Invalid shape. If 'strains' is a tuple, it must be a 6-tuple "
-                    "of 1d NumPy arrays of the same length."
-                )
-            )
-
-        if not strains.shape[-1] == 6:
-            raise ValueError("Invalid number of strain components.")
-
-        if len(strains.shape) == 1:
-            stresses = self.contracted_components() @ strains
-            result = HMH_3d(stresses)
-        else:
-            stresses = (self.contracted_components() @ strains.T).T
-            result = HMH_3d_multi(stresses)
-
-        return result
 
     def calculate_stresses(self, strains: ndarray) -> ndarray:
         """

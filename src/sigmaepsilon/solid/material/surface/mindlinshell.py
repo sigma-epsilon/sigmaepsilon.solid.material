@@ -5,10 +5,10 @@ from numpy import ndarray
 import numpy as np
 from numpy.linalg import inv
 
-from sigmaepsilon.math import atleastnd, atleast1d
+from sigmaepsilon.math import atleastnd, atleast1d, atleast2d
 from sigmaepsilon.math import to_range_1d
+from sigmaepsilon.math.linalg import ReferenceFrame
 
-from ..utils.hmh import HMH_S_multi
 from .surface import SurfaceSection, SurfaceLayer
 from ..utils import mindlin_elastic_material_stiffness_matrix
 from ..utils.mindlin import (
@@ -16,8 +16,17 @@ from ..utils.mindlin import (
     shell_rotation_matrix,
     z_to_shear_factors,
 )
-from ..utils.postproc import pproc_Mindlin_3D
 from ..enums import MaterialModelType
+
+from ..utils import mindlin_elastic_material_stiffness_matrix
+from ..utils.mindlin import (
+    _get_shell_material_stiffness_matrix,
+    shell_rotation_matrix,
+)
+from ..enums import MaterialModelType
+from ..linearelasticmaterial import LinearElasticMaterial
+from ..failure import HuberMisesHenckyFailureCriterion_SP
+from ..proto import MaterialLike, FailureLike
 
 __all__ = ["MindlinShellSection"]
 
@@ -79,8 +88,8 @@ class MindlinShellLayer(SurfaceLayer):
         tmin = self._tmin
         tmax = self._tmax
         A = C[:3, :3] * (tmax - tmin)
-        B = (1 / 2) * C[:3, :3] * (tmax ** 2 - tmin ** 2)
-        D = (1 / 3) * C[:3, :3] * (tmax ** 3 - tmin ** 3)
+        B = (1 / 2) * C[:3, :3] * (tmax**2 - tmin**2)
+        D = (1 / 3) * C[:3, :3] * (tmax**3 - tmin**3)
         S = C[3:, 3:] * (tmax - tmin)
         ABDS = np.zeros([8, 8], dtype=float)
         ABDS[0:3, 0:3] = A
@@ -95,7 +104,7 @@ class MindlinShellLayer(SurfaceLayer):
         Prepares data for continuous interpolation of shear factors. Should
         be called if shear factors are already set.
         """
-        coeff_inv = inv(np.array([[1, z, z ** 2] for z in self._zi]))
+        coeff_inv = inv(np.array([[1, z, z**2] for z in self._zi]))
         self._sfx = np.matmul(coeff_inv, self._shear_factors_x)
         self._sfy = np.matmul(coeff_inv, self._shear_factors_y)
 
@@ -117,9 +126,44 @@ class MindlinShellLayer(SurfaceLayer):
         the thickness.
         """
         z0, z1, z2 = self._zi
-        z = np.array([[1, z0, z0 ** 2], [1, z1, z1 ** 2], [1, z2, z2 ** 2]])
+        z = np.array([[1, z0, z0**2], [1, z1, z1**2], [1, z2, z2**2]])
         a, b, c = inv(z) @ np.array(data)
-        return lambda z: a + b * z + c * z ** 2
+        return lambda z: a + b * z + c * z**2
+
+    def stresses(
+        self,
+        *,
+        strains: ndarray,
+        stresses: ndarray,
+        z: float = None,
+        out: ndarray = None,
+    ) -> ndarray:
+        C = self.material_elastic_stiffness_matrix()
+        num_component = C.shape[0]
+
+        strains = atleast2d(strains, front=True)
+        num_data = strains.shape[0]
+
+        if out is None:
+            out = np.zeros((num_data, num_component), dtype=float)
+
+        out[:, :3] = (C[:3, :3] @ (strains[:, :3] + z * strains[:, 3:6]).T).T
+
+        sfx, sfy = z_to_shear_factors(z, self._sfx, self._sfy)
+        out[:, 3] = sfx * stresses[:, -2]
+        out[:, 4] = sfy * stresses[:, -1]
+
+        return out
+
+    def utilization(self, *args, **kwargs) -> ndarray:
+        if not hasattr(self.material, "failure_model"):
+            raise NotImplementedError(
+                (
+                    "The attached material is not equipped with the tools to"
+                    "calculate utilization."
+                )
+            )
+        return self.material.failure_model.utilization(*args, **kwargs)
 
 
 class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
@@ -157,10 +201,22 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
 
     layer_class = MindlinShellLayer
     model_type = MaterialModelType.SHELL_UFLYAND_MINDLIN
+    material_class: MaterialLike = LinearElasticMaterial
+    failure_class: FailureLike = HuberMisesHenckyFailureCriterion_SP
+    number_of_stress_components: int = 5
 
     @staticmethod
     def Material(**kwargs) -> ndarray:
         return mindlin_elastic_material_stiffness_matrix(**kwargs)
+
+    @staticmethod
+    def Material(**kwargs) -> LinearElasticMaterial:
+        arr = mindlin_elastic_material_stiffness_matrix(**kwargs)
+        frame = ReferenceFrame(dim=3)
+        # stiffness = ElasticityTensor(arr, frame=frame, tensorial=False)
+        stiffness = arr
+        failure_model = HuberMisesHenckyFailureCriterion_SP()
+        return LinearElasticMaterial(stiffness=stiffness, failure_model=failure_model)
 
     def _elastic_stiffness_matrix(self, out: ndarray) -> None:
         """
@@ -191,8 +247,8 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         alpha_y = ABDS_inv[1, 4]
         beta_y = ABDS_inv[4, 4]
 
-        eta_x = 1 / (A11 * D11 - B11 ** 2)
-        eta_y = 1 / (A22 * D22 - B22 ** 2)
+        eta_x = 1 / (A11 * D11 - B11**2)
+        eta_y = 1 / (A22 * D22 - B22**2)
         alpha_x = -B11 * eta_x
         beta_x = A11 * eta_x
         alpha_y = -B22 * eta_y
@@ -250,8 +306,8 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
             Gyi = C[-1, -1]
             for loc, weight in zip(gP, gW):
                 sfx, sfy = layer._loc_to_shear_factors(loc)
-                pot_p_x += 0.5 * (sfx ** 2) * dJ * weight / Gxi
-                pot_p_y += 0.5 * (sfy ** 2) * dJ * weight / Gyi
+                pot_p_x += 0.5 * (sfx**2) * dJ * weight / Gxi
+                pot_p_y += 0.5 * (sfy**2) * dJ * weight / Gyi
         kx = pot_c_x / pot_p_x
         ky = pot_c_y / pot_p_y
 
@@ -337,33 +393,6 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         """
         return self._postprocess(*args, mode="u", **kwargs)
 
-    def calculate_equivalent_stress(self, *args, **kwargs) -> ndarray:
-        """
-        Calculates equivalent material stresses for input internal forces or strains
-        according to the built-in failure criteria and returns it as a NumPy array.
-
-        Either strains or stresses must be provided.
-
-        If the points of evaluation are not explivitly specified with the parameter 'z',
-        results are calculated at a default number of points per every layer.
-
-        Parameters
-        ----------
-        strains: numpy.ndarray, Optional
-            1d or 2d NumPy array. Default is None.
-        stresses: numpy.ndarray, Optional
-            1d or 2d NumPy array. Default is None
-        z: Iterable[Number], Optional
-            Points of evaluation. Default is None.
-        rng: Iterable[Number], Optional
-            The range in which 'z' is to be understood. Default is (-1, 1).
-        squeeze: bool, Optional
-            Whether to squeeze the reusulting array or not. Default is `True`.
-        ppl: int, Optional
-            Point per layer. Default is None.
-        """
-        return self._postprocess(*args, mode="eq", **kwargs)
-
     def _postprocess(
         self,
         *,
@@ -374,13 +403,12 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         squeeze: Optional[bool] = True,
         ppl: Optional[Union[int, None]] = None,
         mode: Optional[str] = "stress",
-        **kwargs
+        **kwargs,
     ) -> Union[Number, Iterable[Number]]:
         """
         Calculates stresses, equivalent stresses or utilizations, according to the parameter
         'mode'. The different modes are:
             * 'stress' : the function returns stresses
-            * 'eq': the function returns equivalent stresses
             * 'u': the function returns utilizations
 
         Either strains or stresses must be provided for the function.
@@ -405,13 +433,11 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         mode: str, Optional
             This parameter controls the output.
             'stresses' : the function returns stresses
-            'eq': the function returns equivalent stresses
             'u': the function returns utilizations
         """
         layers: Iterable[MindlinShellLayer] = self.layers
 
         return_stresses = mode == "stress"
-        return_eq_stresses = mode == "eq"
         return_utilization = mode == "u"
 
         if z is None:
@@ -434,11 +460,11 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
                 squeeze=False,
                 mode=mode,
                 layers=_layers,
-                **kwargs
+                **kwargs,
             )
 
             if len(result.shape) == 2:
-                assert return_eq_stresses or return_utilization
+                assert return_utilization
                 result = result.reshape(num_data, num_layers, num_point_per_layer)
             else:
                 assert return_stresses
@@ -456,7 +482,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
                 rng=rng,
                 squeeze=squeeze,
                 mode=mode,
-                **kwargs
+                **kwargs,
             )
 
     def _postprocess_standard_form(
@@ -469,43 +495,18 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         squeeze: Optional[bool] = True,
         mode: Optional[str] = "stress",
         layers: Optional[Union[Iterable[MindlinShellLayer], None]] = None,
-        **kwargs
+        **kwargs,
     ) -> Union[Number, Iterable[Number]]:
         """
         Calculates stresses, equivalent stresses or utilizations, according to the parameter
         'mode'. The different modes are:
             * 'stresses' : the function returns stresses
-            * 'eq': the function returns equivalent stresses
             * 'u': the function returns utilizations
 
         Either strains or stresses must be provided for the function.
 
         If the points of evaluation are not explivitly specified with the parameter 'z',
         results are calculated at a default number of points per every layer.
-
-        Parameters
-        ----------
-        strains: numpy.ndarray, Optional
-            1d or 2d NumPy array. Default is None.
-        stresses: numpy.ndarray, Optional
-            1d or 2d NumPy array. Default is None
-        z: Iterable[Number], Optional
-            Points of evaluation. Default is None.
-        rng: Iterable[Number], Optional
-            The range in which 'z' is to be understood. Default is (-1, 1).
-        squeeze: bool, Optional
-            Whether to squeeze the reusulting array or not. Default is `True`.
-        ppl: int, Optional
-            Point per layer. Default is None.
-        layers: Iterable[MindlinShellLayer], Optional
-            If layers are explicitly provided (for instance as leftover data from a previous
-            calculation step), the number of layers must match the number of points provided
-            by the parameter 'z'.
-        mode: str, Optional
-            This parameter controls the output.
-            'stresses' : the function returns stresses
-            'eq': the function returns equivalent stresses
-            'u': the function returns utilizations
         """
 
         if strains is None:
@@ -518,10 +519,9 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
             stresses = (self.ABDS @ strains.T).T
 
         return_stresses = mode == "stress"
-        return_eq_stresses = mode == "eq"
         return_utilization = mode == "u"
 
-        assert any([return_stresses, return_eq_stresses, return_utilization])
+        assert any([return_stresses, return_utilization])
 
         # mapping input points
         z = atleast1d(z)
@@ -534,33 +534,23 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
 
         num_z = len(layers)
         num_data = strains.shape[0]
+        num_component = strains.shape[-1]
 
         assert all([layer is not None for layer in layers])
 
         if return_stresses:
-            result = np.zeros((num_data, num_z, 5), dtype=float)
+            result = np.zeros((num_data, num_z, num_component), dtype=float)
         else:
             result = np.zeros((num_data, num_z), dtype=float)
 
+        material_stresses = np.zeros((num_data, num_component), dtype=float)
         for iz, layer in enumerate(layers):
-            C = layer.material_elastic_stiffness_matrix()
-            material_stresses = np.zeros((num_data, 5), dtype=float)
-
-            material_stresses[:, :3] = (
-                C[:3, :3] @ (strains[:, :3] + z[iz] * strains[:, 3:6]).T
-            ).T
-
-            sfx, sfy = z_to_shear_factors(z[iz], layer._sfx, layer._sfy)
-            material_stresses[:, 3] = sfx * stresses[:, -2]
-            material_stresses[:, 4] = sfy * stresses[:, -1]
-
+            layer.stresses(
+                strains=strains, stresses=stresses, z=z[iz], out=material_stresses
+            )
             if return_stresses:
                 result[:, iz, :] = material_stresses
-            elif return_eq_stresses:
-                result[:, iz] = HMH_S_multi(material_stresses)
             elif return_utilization:
-                result[:, iz] = (
-                    HMH_S_multi(material_stresses) / layer.material.yield_strength
-                )
+                result[:, iz] = layer.utilization(stresses=material_stresses)
 
         return np.squeeze(result) if squeeze else result

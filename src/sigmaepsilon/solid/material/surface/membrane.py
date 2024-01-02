@@ -1,4 +1,4 @@
-from typing import Union, Optional, Iterable, Tuple
+from typing import Union, Optional
 from numbers import Number
 import warnings
 
@@ -6,21 +6,18 @@ import numpy as np
 from numpy import ndarray, ascontiguousarray as ascont
 from numpy.linalg import inv
 
-from sigmaepsilon.math import atleastnd, atleast1d
-from sigmaepsilon.math import to_range_1d
+from sigmaepsilon.math import atleast2d
 
+from ..proto import MaterialLike, FailureLike
 from .mindlinshell import MindlinShellSection, MindlinShellLayer
-from ..utils.hmh import HMH_M_multi
-from ..utils import (
-    membrane_elastic_material_stiffness_matrix,
-    mindlin_elastic_material_stiffness_matrix,
-)
 from ..utils.mindlin import (
     _get_shell_material_stiffness_matrix,
     shell_rotation_matrix,
 )
 from ..warnings import SigmaEpsilonMaterialWarning
 from ..enums import MaterialModelType
+from ..linearelasticmaterial import LinearElasticMaterial
+from ..failure import HuberMisesHenckyFailureCriterion_M
 
 __all__ = ["MembraneSection"]
 
@@ -71,6 +68,20 @@ class MembraneLayer(MindlinShellLayer):
                 raise ValueError(f"Invalid value '{shape}' for parameter 'shape'")
         raise NotImplementedError
 
+    def stresses(self, *, strains: ndarray, out: ndarray = None, **__) -> ndarray:
+        C = self.material_elastic_stiffness_matrix()
+        num_component = C.shape[0]
+
+        strains = atleast2d(strains, front=True)
+        num_data = strains.shape[0]
+
+        if out is None:
+            out = np.zeros((num_data, num_component), dtype=float)
+
+        out[:, :3] = (C[:3, :3] @ strains[:, :3].T).T
+
+        return out
+
 
 class MembraneSection(MindlinShellSection):
     """
@@ -110,17 +121,12 @@ class MembraneSection(MindlinShellSection):
 
     layer_class = MembraneLayer
     model_type = MaterialModelType.MEMBRANE
+    failure_class: FailureLike = HuberMisesHenckyFailureCriterion_M
+    number_of_stress_components: int = 3
 
     def __init__(self, *args, assume_regular: bool = False, **kwargs):
         self._assume_regular = assume_regular
         return super().__init__(*args, **kwargs)
-
-    @staticmethod
-    def Material(shape: Optional[Union[str, None]] = "full", **kwargs) -> ndarray:
-        if isinstance(shape, str) and shape.lower() == "full":
-            return mindlin_elastic_material_stiffness_matrix(**kwargs)
-        else:
-            return membrane_elastic_material_stiffness_matrix(**kwargs)
 
     @MindlinShellSection.eccentricity.setter
     def eccentricity(self, _: Number) -> None:
@@ -151,66 +157,3 @@ class MembraneSection(MindlinShellSection):
         self._ABDS = (self._ABDS + self._ABDS.T) / 2
         self._SDBA = np.linalg.inv(self._ABDS)
         return self._ABDS
-
-    def _postprocess_standard_form(
-        self,
-        *,
-        strains: Optional[Union[ndarray, None]] = None,
-        stresses: Optional[Union[ndarray, None]] = None,
-        z: Optional[Union[Number, Iterable[Number], None]] = None,
-        rng: Optional[Tuple[Number, Number]] = (-1.0, 1.0),
-        squeeze: Optional[bool] = True,
-        mode: Optional[str] = "stress",
-        layers: Optional[Union[Iterable[MindlinShellLayer], None]] = None,
-    ) -> Union[Number, Iterable[Number]]:
-
-        if strains is None:
-            assert isinstance(stresses, ndarray)
-            strains = (self.SDBA @ stresses.T).T
-
-        strains = atleastnd(strains, 2, front=True)
-
-        if stresses is None:
-            stresses = (self.ABDS @ strains.T).T
-
-        return_stresses = mode == "stress"
-        return_eq_stresses = mode == "eq"
-        return_utilization = mode == "u"
-
-        assert any([return_stresses, return_eq_stresses, return_utilization])
-
-        # mapping input points
-        z = atleast1d(z)
-        bounds = self.bounds
-        z = to_range_1d(z, source=rng, target=(bounds[0, 0], bounds[-1, -1]))
-
-        # mapping points to layers
-        if layers is None:
-            layers: Iterable[MindlinShellLayer] = self.find_layers(z, rng)
-
-        num_z = len(layers)
-        num_data = strains.shape[0]
-
-        assert all([layer is not None for layer in layers])
-
-        if return_stresses:
-            result = np.zeros((num_data, num_z, 3), dtype=float)
-        else:
-            result = np.zeros((num_data, num_z), dtype=float)
-
-        for iz, layer in enumerate(layers):
-            C = layer.material_elastic_stiffness_matrix()
-            material_stresses = np.zeros((num_data, 3), dtype=float)
-
-            material_stresses[:, :3] = (C[:3, :3] @ strains[:, :3].T).T
-
-            if return_stresses:
-                result[:, iz, :] = material_stresses
-            elif return_eq_stresses:
-                result[:, iz] = HMH_M_multi(material_stresses)
-            elif return_utilization:
-                result[:, iz] = (
-                    HMH_M_multi(material_stresses) / layer.material.yield_strength
-                )
-
-        return np.squeeze(result) if squeeze else result

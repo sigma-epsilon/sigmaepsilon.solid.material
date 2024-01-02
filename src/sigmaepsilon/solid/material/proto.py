@@ -14,6 +14,7 @@ class StiffnessLike(Protocol):
     """
 
     model_type: ClassVar[MaterialModelType]
+    number_of_stress_components: ClassVar[int]
 
     def elastic_stiffness_matrix(
         self, strains: Optional[Union[ndarray, None]] = None
@@ -26,6 +27,20 @@ class StiffnessLike(Protocol):
         quality of the returned data, namely to check that is represents a valid
         material in the sense that it adheres to a numerical model in alignment with
         the known laws of solid mechanics.
+        """
+        ...
+        
+    def calculate_stresses(self, strains: ndarray) -> ndarray:
+        """
+        A function that returns stresses for strains as either an 1d or a 2d NumPy array,
+        depending on the shape of the input array.
+        """
+        ...
+        
+    def calculate_strains(self, stresses: ndarray) -> ndarray:
+        """
+        A function that returns strains for stresses as either an 1d or a 2d NumPy array,
+        depending on the shape of the input array.
         """
         ...
 
@@ -47,66 +62,38 @@ class FailureLike(Protocol):
 
 
 @runtime_checkable
-class BaseMaterialLike(StiffnessLike, Protocol):
-    """
-    Base class for materials.
-
-    Note
-    ----
-    If the instance stores
-    data for multiple entities, their yield strength is considered to
-    be the same. Therefore, logical units of a model should be construced
-    in a way that uses big blocks of cells of the same material. The fewer
-    the blocks and bigger the chunks, the better the efficiency of data structure.
-    """
-
-    def utilization(self) -> Union[Number, Iterable[Number]]:
-        """
-        A function that returns a positive number. If the value is 1.0, it means that the material
-        is at peak performance and any further increase in the loads is very likely to lead to failure
-        of the material.
-        """
-        ...
-
-    def calculate_stresses(self) -> ndarray:
-        """
-        A function that returns stresses for strains as either an 1d or a 2d NumPy array,
-        depending on the shape of the input array.
-        """
-        ...
-
-    def calculate_equivalent_stress(self) -> ndarray:
-        """
-        A function that returns stresses for strains as either an 1d or a 2d NumPy array,
-        depending on the shape of the input array.
-        """
-        ...
-
-
-@runtime_checkable
 class MaterialLike(Protocol):
     """
     Base class for materials.
     """
 
-    def elastic_stiffness_matrix(
-        self, strains: Optional[Union[ndarray, None]] = None
-    ) -> ndarray:
+    @property
+    def stiffness(self) -> StiffnessLike:
         """
-        A function that returns the material stiffness matrix as a NumPy array.
+        Returns the object representation of the stiffness of the material.
         """
-        raise NotImplementedError
+        ...
 
-    def utilization(
-        self,
-        strains: Optional[Union[ndarray, None]] = None,
-    ) -> Union[Number, Iterable[Number]]:
+    @stiffness.setter
+    def stiffness(self, value: StiffnessLike) -> None:
         """
-        A function that returns a positive number. If the value is 1.0, it means that the material
-        is at peak performance and any further increase in the loads is very likely to lead to failure
-        of the material.
+        Sets the object representation of the material.
         """
-        raise NotImplementedError
+        ...
+
+    @property
+    def failure_model(self) -> FailureLike:
+        """
+        Returns the object representation of the failure model of the material.
+        """
+        ...
+
+    @failure_model.setter
+    def failure_model(self, value: Number) -> None:
+        """
+        Sets the object representation of the failure model.
+        """
+        ...
 
 
 @runtime_checkable
