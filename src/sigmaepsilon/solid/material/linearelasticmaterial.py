@@ -2,7 +2,6 @@ from typing import Optional, Union, Iterable, ClassVar
 from numbers import Number
 
 from numpy import ndarray
-import numpy as np
 
 from .proto import StiffnessLike, FailureLike
 from .enums import MaterialModelType
