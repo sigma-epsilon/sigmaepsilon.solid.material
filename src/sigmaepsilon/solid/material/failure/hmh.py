@@ -114,9 +114,9 @@ class HuberMisesHenckyFailureCriterion:
             )
 
         if isinstance(self.model_type, Iterable):
-            num_component_expected = self.model_type[0].number_of_stress_variables
+            num_component_expected = self.model_type[0].number_of_material_stress_variables
         else:
-            num_component_expected = self.model_type.number_of_stress_variables
+            num_component_expected = self.model_type.number_of_material_stress_variables
         
         if not num_component == num_component_expected:  # pragma: no cover
             raise ValueError(

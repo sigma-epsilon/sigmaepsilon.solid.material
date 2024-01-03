@@ -1,18 +1,22 @@
-from typing import Union, Optional, Iterable, Tuple
+from typing import Union, Optional, Iterable
 from numbers import Number
 
 from numpy import ndarray, ascontiguousarray as ascont
 import numpy as np
 
-from sigmaepsilon.math import atleastnd, atleast1d
-from sigmaepsilon.math import to_range_1d
+from sigmaepsilon.math import atleastnd
 
 from .mindlinshell import MindlinShellLayer, MindlinShellSection
-from ..utils.hmh import HMH_S_multi
-from ..utils.mindlin import z_to_shear_factors
 from ..enums import MaterialModelType
 
 __all__ = ["KirchhoffShellSection"]
+
+
+class KirchhoffShellLayer(MindlinShellLayer):
+    """
+    A class for layers of a Kirchhoff-Love shells.
+    """
+    ...
 
 
 class KirchhoffShellSection(MindlinShellSection):
@@ -58,6 +62,7 @@ class KirchhoffShellSection(MindlinShellSection):
     """
 
     model_type = MaterialModelType.SHELL_KIRCHHOFF_LOVE
+    layer_class = KirchhoffShellLayer
 
     def elastic_stiffness_matrix(self, tol: Number = 1e-8) -> ndarray:
         """
@@ -77,11 +82,7 @@ class KirchhoffShellSection(MindlinShellSection):
         strains: Optional[Union[ndarray, None]] = None,
         stresses: Optional[Union[ndarray, None]] = None,
         shear_forces: Optional[Union[ndarray, None]] = None,
-        z: Optional[Union[Number, Iterable[Number], None]] = None,
-        rng: Optional[Tuple[Number, Number]] = (-1.0, 1.0),
-        squeeze: Optional[bool] = True,
-        mode: Optional[str] = "stress",
-        layers: Optional[Union[Iterable[MindlinShellLayer], None]] = None,
+        **kwargs
     ) -> Union[Number, Iterable[Number]]:
 
         if strains is None:
@@ -97,50 +98,4 @@ class KirchhoffShellSection(MindlinShellSection):
             stresses[:, :6] = (self.ABDS @ strains[:, :6].T).T
             stresses[:, 6:] = shear_forces
 
-        return_stresses = mode == "stress"
-        return_eq_stresses = mode == "eq"
-        return_utilization = mode == "u"
-
-        assert any([return_stresses, return_eq_stresses, return_utilization])
-
-        # mapping input points
-        z = atleast1d(z)
-        bounds = self.bounds
-        z = to_range_1d(z, source=rng, target=(bounds[0, 0], bounds[-1, -1]))
-
-        # mapping points to layers
-        if layers is None:
-            layers: Iterable[MindlinShellLayer] = self.find_layers(z, rng)
-
-        num_z = len(layers)
-        num_data = strains.shape[0]
-
-        assert all([layer is not None for layer in layers])
-
-        if return_stresses:
-            result = np.zeros((num_data, num_z, 5), dtype=float)
-        else:
-            result = np.zeros((num_data, num_z), dtype=float)
-
-        for iz, layer in enumerate(layers):
-            C = layer.material_elastic_stiffness_matrix()
-            material_stresses = np.zeros((num_data, 5), dtype=float)
-
-            material_stresses[:, :3] = (
-                C[:3, :3] @ (strains[:, :3] + z[iz] * strains[:, 3:6]).T
-            ).T
-
-            sfx, sfy = z_to_shear_factors(z[iz], layer._sfx, layer._sfy)
-            material_stresses[:, 3] = sfx * stresses[:, -2]
-            material_stresses[:, 4] = sfy * stresses[:, -1]
-
-            if return_stresses:
-                result[:, iz, :] = material_stresses
-            elif return_eq_stresses:
-                result[:, iz] = HMH_S_multi(material_stresses)
-            elif return_utilization:
-                result[:, iz] = (
-                    HMH_S_multi(material_stresses) / layer.material.yield_strength
-                )
-
-        return np.squeeze(result) if squeeze else result
+        return super()._postprocess_standard_form(strains=strains, stresses=stresses, **kwargs)

@@ -203,7 +203,8 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
     model_type = MaterialModelType.SHELL_UFLYAND_MINDLIN
     material_class: MaterialLike = LinearElasticMaterial
     failure_class: FailureLike = HuberMisesHenckyFailureCriterion_SP
-    number_of_stress_components: int = 5
+    number_of_material_stress_components: int = 5
+    number_of_stress_components: int = 8
 
     @staticmethod
     def Material(**kwargs) -> ndarray:
@@ -211,11 +212,15 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
 
     @staticmethod
     def Material(**kwargs) -> LinearElasticMaterial:
+        """
+        Returns a basic linear material model consistent with the shell.
+        """
+        from sigmaepsilon.solid.material import ElasticityTensor
         arr = mindlin_elastic_material_stiffness_matrix(**kwargs)
         frame = ReferenceFrame(dim=3)
-        # stiffness = ElasticityTensor(arr, frame=frame, tensorial=False)
-        stiffness = arr
-        failure_model = HuberMisesHenckyFailureCriterion_SP()
+        stiffness = ElasticityTensor(arr, frame=frame, tensorial=False)
+        yield_strength = kwargs.get("yield_strength", np.Infinity)
+        failure_model = HuberMisesHenckyFailureCriterion_SP(yield_strength=yield_strength)
         return LinearElasticMaterial(stiffness=stiffness, failure_model=failure_model)
 
     def _elastic_stiffness_matrix(self, out: ndarray) -> None:
@@ -534,7 +539,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
 
         num_z = len(layers)
         num_data = strains.shape[0]
-        num_component = strains.shape[-1]
+        num_component = self.__class__.model_type.number_of_material_stress_components
 
         assert all([layer is not None for layer in layers])
 
