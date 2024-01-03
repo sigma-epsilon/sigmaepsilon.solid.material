@@ -10,18 +10,11 @@ from sigmaepsilon.math import to_range_1d
 from sigmaepsilon.math.linalg import ReferenceFrame
 
 from .surface import SurfaceSection, SurfaceLayer
-from ..utils import mindlin_elastic_material_stiffness_matrix
+from ..utils import elastic_stiffness_matrix
 from ..utils.mindlin import (
     _get_shell_material_stiffness_matrix,
     shell_rotation_matrix,
     z_to_shear_factors,
-)
-from ..enums import MaterialModelType
-
-from ..utils import mindlin_elastic_material_stiffness_matrix
-from ..utils.mindlin import (
-    _get_shell_material_stiffness_matrix,
-    shell_rotation_matrix,
 )
 from ..enums import MaterialModelType
 from ..linearelasticmaterial import LinearElasticMaterial
@@ -206,21 +199,17 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
     number_of_material_stress_components: int = 5
     number_of_stress_components: int = 8
 
-    @staticmethod
-    def Material(**kwargs) -> ndarray:
-        return mindlin_elastic_material_stiffness_matrix(**kwargs)
-
-    @staticmethod
-    def Material(**kwargs) -> LinearElasticMaterial:
+    @classmethod
+    def Material(cls, **kwargs) -> LinearElasticMaterial:
         """
         Returns a basic linear material model consistent with the shell.
         """
         from sigmaepsilon.solid.material import ElasticityTensor
-        arr = mindlin_elastic_material_stiffness_matrix(**kwargs)
+        hooke = elastic_stiffness_matrix(**kwargs)
         frame = ReferenceFrame(dim=3)
-        stiffness = ElasticityTensor(arr, frame=frame, tensorial=False)
+        stiffness = ElasticityTensor(hooke, frame=frame, tensorial=False)
         yield_strength = kwargs.get("yield_strength", np.Infinity)
-        failure_model = HuberMisesHenckyFailureCriterion_SP(yield_strength=yield_strength)
+        failure_model = cls.failure_class(yield_strength=yield_strength)
         return LinearElasticMaterial(stiffness=stiffness, failure_model=failure_model)
 
     def _elastic_stiffness_matrix(self, out: ndarray) -> None:

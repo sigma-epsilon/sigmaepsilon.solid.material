@@ -8,7 +8,7 @@ from numpy.linalg import inv
 
 from sigmaepsilon.math import atleast2d
 
-from ..proto import MaterialLike, FailureLike
+from ..proto import FailureLike
 from .mindlinshell import MindlinShellSection, MindlinShellLayer
 from ..utils.mindlin import (
     _get_shell_material_stiffness_matrix,
@@ -16,7 +16,6 @@ from ..utils.mindlin import (
 )
 from ..warnings import SigmaEpsilonMaterialWarning
 from ..enums import MaterialModelType
-from ..linearelasticmaterial import LinearElasticMaterial
 from ..failure import HuberMisesHenckyFailureCriterion_M
 
 __all__ = ["MembraneSection"]

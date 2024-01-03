@@ -14,13 +14,23 @@ from sigmaepsilon.solid.material import (
 from sigmaepsilon.solid.material.utils import elastic_stiffness_matrix
 from sigmaepsilon.solid.material.warnings import SigmaEpsilonMaterialWarning
 
+failure_model = HuberMisesHenckyFailureCriterion_M()
 
 class TestMembraneSection(SolidMaterialTestCase):
     def test_membrane_behaviour(self):
+        
+        E = 2890.0
+        nu = 0.2
+        hooke = elastic_stiffness_matrix(E=E, NU=nu)
+        frame = ReferenceFrame(dim=3)
+        stiffness = ElasticityTensor(hooke, frame=frame, tensorial=False)
+        failure_model = HuberMisesHenckyFailureCriterion_M()
+        material = LinearElasticMaterial(stiffness=stiffness, failure_model=failure_model)
+        
         section = Section(
             layers=[
                 Section.Layer(
-                    material=Section.Material(E=2100000, nu=0.3), thickness=0.1
+                    material=material, thickness=0.1
                 )
             ]
         )
