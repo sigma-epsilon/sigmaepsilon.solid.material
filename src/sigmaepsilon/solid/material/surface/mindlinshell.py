@@ -205,6 +205,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         Returns a basic linear material model consistent with the shell.
         """
         from sigmaepsilon.solid.material import ElasticityTensor
+
         hooke = elastic_stiffness_matrix(**kwargs)
         frame = ReferenceFrame(dim=3)
         stiffness = ElasticityTensor(hooke, frame=frame, tensorial=False)
@@ -444,7 +445,8 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
             for layer in layers:
                 for loc in locations:
                     _layers.append(layer)
-                    z.append(layer._loc_to_z(loc))
+                    z.append(loc)
+            rng=(-1, 1)
 
             result = self._postprocess_standard_form(
                 strains=strains,
@@ -489,7 +491,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         squeeze: Optional[bool] = True,
         mode: Optional[str] = "stress",
         layers: Optional[Union[Iterable[MindlinShellLayer], None]] = None,
-        **kwargs,
+        **__,
     ) -> Union[Number, Iterable[Number]]:
         """
         Calculates stresses, equivalent stresses or utilizations, according to the parameter
@@ -521,10 +523,10 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         z = atleast1d(z)
         bounds = self.bounds
         z = to_range_1d(z, source=rng, target=(bounds[0, 0], bounds[-1, -1]))
-
+        
         # mapping points to layers
         if layers is None:
-            layers: Iterable[MindlinShellLayer] = self.find_layers(z, rng)
+            layers: Iterable[MindlinShellLayer] = self.find_layers(z)
 
         num_z = len(layers)
         num_data = strains.shape[0]
@@ -545,6 +547,8 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
             if return_stresses:
                 result[:, iz, :] = material_stresses
             elif return_utilization:
-                result[:, iz] = layer.utilization(stresses=material_stresses)
+                result[:, iz] = layer.utilization(
+                    stresses=material_stresses, squeeze=False
+                )
 
         return np.squeeze(result) if squeeze else result

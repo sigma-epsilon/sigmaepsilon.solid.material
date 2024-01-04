@@ -206,9 +206,7 @@ class SurfaceSection(Generic[T]):
         """
         return sum([l.thickness for l in self.layers])
 
-    def find_layer(
-        self, z: float, rng: Optional[Iterable[Number]] = (-1, 1), tol: float = 1e-3
-    ) -> T:
+    def find_layer(self, z: float, tol: float = 1e-3) -> T:
         """
         Returns the layer that contains the point
         """
@@ -221,13 +219,11 @@ class SurfaceSection(Generic[T]):
                 return layer
         return None
 
-    def find_layers(
-        self, z: Iterable[float], rng: Optional[Iterable[Number]] = (-1, 1)
-    ) -> Iterable[T]:
+    def find_layers(self, z: Iterable[float]) -> Iterable[T]:
         """
         Returns the hosting layer for several points along the thickness.
         """
-        return [self.find_layer(zi, rng) for zi in z]
+        return [self.find_layer(zi) for zi in z]
 
     @classmethod
     def Layer(cls, *args, **kwargs) -> T:
@@ -317,33 +313,6 @@ class SurfaceSection(Generic[T]):
         """
         Calculates material stresses for input internal forces or strains
         and returns it as a NumPy array.
-
-        Either strains or stresses must be provided.
-
-        If the points of evaluation are not explivitly specified with the parameter 'z',
-        results are calculated at a default number of points per every layer.
-
-        Parameters
-        ----------
-        strains: numpy.ndarray, Optional
-            1d or 2d NumPy array. Default is None.
-        stresses: numpy.ndarray, Optional
-            1d or 2d NumPy array. Default is None
-        z: Iterable[Number], Optional
-            Points of evaluation. Default is None.
-        rng: Iterable[Number], Optional
-            The range in which 'z' is to be understood. Default is (-1, 1).
-        squeeze: bool, Optional
-            Whether to squeeze the reusulting array or not. Default is `True`.
-        ppl: int, Optional
-            Point per layer. Default is None.
-        """
-        raise NotImplementedError
-
-    def calculate_equivalent_stress(self, *args, **kwargs) -> ndarray:
-        """
-        Calculates equivalent material stresses for input internal forces or strains
-        according to the built-in failure criteria and returns it as a NumPy array.
 
         Either strains or stresses must be provided.
 
