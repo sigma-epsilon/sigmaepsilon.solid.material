@@ -2,6 +2,9 @@ from typing import Optional, Union, Iterable, ClassVar
 from numbers import Number
 
 from numpy import ndarray
+import numpy as np
+
+from sigmaepsilon.math import atleastnd
 
 from .proto import StiffnessLike, FailureLike
 from .enums import MaterialModelType
@@ -92,18 +95,47 @@ class LinearElasticMaterial:
         Number or Iterable[Number]
             A single utilization value as a float or several as a 1d array.
         """
+        strains = self._input_as_dense_bulk_ndarray(strains)
+        stresses = self._input_as_dense_bulk_ndarray(stresses)
+        
+        if strains is None:
+            assert isinstance(stresses, ndarray)
+            strains = self.calculate_strains(stresses=stresses)
+
+        strains = atleastnd(strains, 2, front=True)
+
+        if stresses is None:
+            stresses = self.calculate_stresses(strains=strains)
+            
         return self.failure_model.utilization(*args, strains=strains, stresses=stresses)
 
     def calculate_stresses(self, *, strains: ndarray) -> ndarray:
         """
         A function that returns stresses for strains as either an 1d or a 2d NumPy array,
-        depending on the shape of the input array.
-        """
-        return self.stiffness.calculate_stresses(strains=strains)
+        depending on the shape of the input array. Stresses are expected in the order
 
-    def calculate_strains(self, stresses: ndarray) -> ndarray:
+            xx, yy, zz, yz, xz, xy
+            
+        """
+        strains = self._input_as_dense_bulk_ndarray(strains)
+        return self.stiffness.calculate_stresses(strains)
+
+    def calculate_strains(self, *, stresses: ndarray) -> ndarray:
         """
         A function that returns strains for stresses as either an 1d or a 2d NumPy array,
-        depending on the shape of the input array.
+        depending on the shape of the input array. Strains are expected in the order
+
+            xx, yy, zz, yz, xz, xy
+            
         """
-        return self.stiffness.calculate_strains(stresses=stresses)
+        stresses = self._input_as_dense_bulk_ndarray(stresses)
+        return self.stiffness.calculate_strains(stresses)
+    
+    def _input_as_dense_bulk_ndarray(self, input:Union[ndarray, tuple, None]):
+        if input is None:
+            return None
+        elif isinstance(input, ndarray):
+            result = input
+        elif isinstance(input, tuple):
+            result = np.stack(input, axis=1)
+        return atleastnd(result, 2, front=True)
