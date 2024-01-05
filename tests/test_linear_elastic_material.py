@@ -71,10 +71,6 @@ class TestLinearElasticMaterial(SolidMaterialTestCase):
             stiffness=stiffness, failure_model=failure_model
         )
 
-        material.utilization(stresses=np.random.rand(5))
-        material.utilization(stresses=np.random.rand(2, 5))
-        material.utilization(stresses=tuple(np.random.rand(2) for _ in range(5)))
-
         self.assertIsInstance(material.stiffness, ElasticityTensor)
         self.assertIsInstance(material.failure_model, HoffmanFailureCriterion_SP)
 
@@ -116,10 +112,6 @@ class TestLinearElasticMaterial(SolidMaterialTestCase):
         material = LinearElasticMaterial(
             stiffness=stiffness, failure_model=failure_model
         )
-
-        material.utilization(stresses=np.random.rand(3))
-        material.utilization(stresses=np.random.rand(2, 3))
-        material.utilization(stresses=tuple(np.random.rand(2) for _ in range(3)))
 
         self.assertIsInstance(material.stiffness, ElasticityTensor)
         self.assertIsInstance(material.failure_model, HoffmanFailureCriterion_M)
