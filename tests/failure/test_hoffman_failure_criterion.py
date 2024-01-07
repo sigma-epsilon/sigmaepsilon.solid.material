@@ -90,7 +90,7 @@ class TestHoffmanFailureCriterion(SolidMaterialTestCase):
         )
 
 
-class TestFitting(SolidMaterialTestCase):
+class TestHoffmanFitting3d(SolidMaterialTestCase):
     def setUp(self):
         inputs = [
             [-1, 0, 0, 0, 0, 0],
@@ -147,6 +147,74 @@ class TestFitting(SolidMaterialTestCase):
             tol=0.1,
             method="Nelder-Mead",
             x0=[-1.0, 1.0, -1.0, 1.0, -1.0, 1.0, 0.2, 0.2, 0.2],
+        )
+        self.failure_obj.params = params
+        self._predict()
+
+    def _predict(self):
+        prediction = self.failure_obj.utilization(stresses=self.inputs)
+        max_error = np.max(np.abs(prediction - self.outputs))
+        total_error = np.sum(np.sqrt((prediction - self.outputs) ** 2))
+        return prediction, max_error, total_error
+    
+
+class TestHoffmanFittingMembrane(SolidMaterialTestCase):
+    def setUp(self):
+        inputs = [
+            [-1, 0, 0],
+            [0, 1, 0],
+            [0, 0, -1],
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0],
+            [-1, 0.2, 0],
+            [0.2, 1, 0],
+            [-1, 0, 0.2],
+        ]
+        inputs = np.array(inputs, dtype=float)
+        outputs = np.ones(len(inputs))
+
+        failure_obj = HoffmanFailureCriterion_M()
+
+        self.inputs = inputs
+        self.outputs = outputs
+        self.failure_obj = failure_obj
+
+    def test_fit_invalid_method_raises_TypeError(self):
+        self.assertRaises(
+            TypeError, self.failure_obj.fit, self.inputs, self.outputs, method=1
+        )
+
+    def test_fit_auto(self):
+        params = self.failure_obj.fit(
+            self.inputs,
+            self.outputs,
+        )
+        self.failure_obj.params = params
+        self._predict()
+
+    def test_fit_BGA(self):
+        params = self.failure_obj.fit(
+            self.inputs,
+            self.outputs,
+            solver_params=dict(nPop=100, length=12),
+            penalty=1e12,
+            tol=0.1,
+            n_iter=100,
+            ranges=[[-10, 10] for _ in range(7)],
+            method="bga",
+        )
+        self.failure_obj.params = params
+        self._predict()
+
+    def test_fit_NM(self):
+        params = self.failure_obj.fit(
+            self.inputs,
+            self.outputs,
+            penalty=1e12,
+            tol=0.1,
+            method="Nelder-Mead",
+            x0=[-1.0, 1.0, -1.0, 1.0, -1.0, 1.0, 0.2],
         )
         self.failure_obj.params = params
         self._predict()
