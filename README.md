@@ -60,11 +60,11 @@ You should be able to import sigmaepsilon.mesh from the Python prompt:
 
 ```console
 $ python
-Python 3.8.10 (tags/v3.8.10:3d8993a, May  3 2021, 11:48:03) [MSC v.1928 64 bit (AMD64)] on win32
+Python 3.10.2 (tags/v3.10.2:3d8993a, May  3 2023, 11:48:03) [MSC v.1928 64 bit (AMD64)] on win32
 Type "help", "copyright", "credits" or "license" for more information.
 >>> import sigmaepsilon.solid.material
 >>> sigmaepsilon.solid.material.__version__
-'2.2.0'
+'0.0.1a'
 ```
 
 ## Testing and coverage
