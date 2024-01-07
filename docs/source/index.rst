@@ -27,25 +27,26 @@
 .. _Numba: https://numba.pydata.org/
 .. _SciPy: https://scipy.org/
 .. _SymPy: https://www.sympy.org/en/index.html
+.. _CuPy: https://cupy.dev/
 
+The `sigmaepsilon.solid.material`_ is a set of tools to handle problems to related to solid mechanics,
+namely those with questions of stiffness and strength of materials.
 
-The `sigmaepsilon.solid.material`_ library aims to provide the tools to build and analyse polygonal meshes 
-with complex topologies. Meshes can be built like a dictionary, using arbitrarily nested layouts and 
-then be translated to other formats including `VTK`_ and `PyVista`_. For plotting, there is also 
-support for `K3D`_, `Matplotlib`_ and `Plotly`_.
-
-The data model is built around `Awkward`_, which makes it possible to attach nested, variable-sized 
-data to the points or the cells in a mesh, also providing interfaces to other popular libraries like 
-`Pandas`_ or `PyArrow`_. Implementations are fast as they rely on the vector math capabilities of 
-`NumPy`_, while other computationally sensitive calculations are JIT-compiled using `Numba`_.
-
-Here and there we also use `SciPy`_, and `SymPy`_.
-
+The implementations in the library all rely on fast and efficient algorithms provided by the goodies of
+`NumPy`_, `SciPy`_ and the likes. Where necessary, computationally intensive parts of the code are written
+using `Numba`_. Some evaluators also support calculating on the GPU (mostly on NVIDIA), for which we are 
+using `CuPy`_ and `Numba`_. Symbolic calculations are done with `SymPy`_.
 
 Highlights
 ==========
 
 * Classes to handle linear elastic materials of all kinds.
+* Elastic stiffness calculations for all kinds of models like Uflyand-Mindlin shells, 
+Kirchhoff-Love shells, Timoshenko-Ehrenfest and Euler-Bernoulli beams, 3d bodies, etc.
+* Utilization calculations.
+* Fitting of failure models to observed data.
+* NumPy-compilant data classes to handle stiffness, strains and stresses.
+* Fast and efficient code with GPU support.
 
 Installation
 ============
@@ -55,6 +56,11 @@ You can install the project from PyPI with `pip`:
 .. code-block:: shell
 
    $ pip install sigmaepsilon.solid.material
+
+If want to execute on the GPU, you need to manually install the necessary requirements. 
+Numba is a direct dependency, so even in this case you have to care about having the prover
+version of the cuda toolkit installed. For this, you need to know the version of the cuda
+compute engine, which depends on the version of GPU card you are having.
 
 
 Contents
