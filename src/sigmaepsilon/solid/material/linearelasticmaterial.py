@@ -71,6 +71,7 @@ class LinearElasticMaterial:
         *args,
         strains: Optional[Union[ndarray, None]] = None,
         stresses: Optional[Union[ndarray, None]] = None,
+        device:str="cpu",
     ) -> Union[Number, Iterable[Number]]:
         """
         A function that returns a positive number. If the value is 1.0, it means that the material
@@ -95,19 +96,23 @@ class LinearElasticMaterial:
         Number or Iterable[Number]
             A single utilization value as a float or several as a 1d array.
         """
-        strains = self._input_as_dense_bulk_ndarray(strains)
-        stresses = self._input_as_dense_bulk_ndarray(stresses)
+        #strains = self._input_as_dense_bulk_ndarray(strains)
+        #stresses = self._input_as_dense_bulk_ndarray(stresses)
         
         if strains is None:
-            assert isinstance(stresses, ndarray)
-            strains = self.calculate_strains(stresses=stresses)
+            assert stresses is not None, "Either strains or stresses must be provided"
+            _stresses = self._input_as_dense_bulk_ndarray(stresses)
+            strains = self.calculate_strains(stresses=_stresses)
+            if isinstance(stresses, tuple):
+                strains = [strains[:, i] for i in range(strains.shape[-1])]
 
-        strains = atleastnd(strains, 2, front=True)
+        if isinstance(strains, (ndarray, list)):
+            strains = atleastnd(strains, 2, front=True)
 
         if stresses is None:
             stresses = self.calculate_stresses(strains=strains)
             
-        return self.failure_model.utilization(*args, strains=strains, stresses=stresses)
+        return self.failure_model.utilization(*args, strains=strains, stresses=stresses, device=device)
 
     def calculate_stresses(self, *, strains: ndarray) -> ndarray:
         """
