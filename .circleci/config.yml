@@ -15,8 +15,8 @@ jobs:
       image: linux-cuda-12:default
     resource_class: gpu.nvidia.medium
     steps:
-      - run: nvidia-smi
       - checkout  # checkout source code to working directory
+      - run: nvidia-smi
       - python/install-packages:
           pkg-manager: pip
           pip-dependency-file: requirements-test.txt
@@ -40,6 +40,7 @@ jobs:
     resource_class: gpu.nvidia.medium
     steps:
       - checkout  # checkout source code to working directory
+      - run: nvidia-smi
       - run:
           name: Deploy to testpypi
           command: |
@@ -55,6 +56,7 @@ jobs:
     resource_class: gpu.nvidia.medium
     steps:
       - checkout  # checkout source code to working directory
+      - run: nvidia-smi
       - run:
           name: Deploy to pypi
           command: |
@@ -81,6 +83,7 @@ jobs:
         
     steps:
       - checkout
+      - run: nvidia-smi
       - run:
           name: Install package for testing
           command: pip install ".[test, dev]"
