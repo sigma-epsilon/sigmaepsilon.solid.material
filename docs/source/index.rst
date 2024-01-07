@@ -1,6 +1,6 @@
-=============================================================================================================
-**SigmaEpsilon.Solid.Material** - Data Structures, Computation and Visualization for Complex Polygonal Meshes in Python
-=============================================================================================================
+=============================================================================
+**SigmaEpsilon.Solid.Material** - Classes and algorithms for solids in Python
+=============================================================================
 
 .. toctree::
    :maxdepth: 1
@@ -19,7 +19,7 @@
 :doc:`user_guide` |
 :doc:`examples_gallery` |
 :ref:`API Reference` |
-`Source Repository <https://github.com/sigma-epsilon/sigmaepsilon.solid.mesh>`_
+`Source Repository <https://github.com/sigma-epsilon/sigmaepsilon.solid.material>`_
 
 .. _sigmaepsilon.solid.material: https://sigmaepsilon.solid.material.readthedocs.io/en/latest/
 .. _Matplotlib: https://matplotlib.org/
@@ -42,7 +42,7 @@ Highlights
 
 * Classes to handle linear elastic materials of all kinds.
 * Elastic stiffness calculations for all kinds of models like Uflyand-Mindlin shells, 
-Kirchhoff-Love shells, Timoshenko-Ehrenfest and Euler-Bernoulli beams, 3d bodies, etc.
+  Kirchhoff-Love shells, Timoshenko-Ehrenfest and Euler-Bernoulli beams, 3d bodies, etc.
 * Utilization calculations.
 * Fitting of failure models to observed data.
 * NumPy-compilant data classes to handle stiffness, strains and stresses.

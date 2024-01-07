@@ -1,4 +1,4 @@
-# **SigmaEpsilon.Solid.Material** - Solid Mechanics in Python
+# **SigmaEpsilon.Solid.Material** - Classes and algorithms for solids in Python
 
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/sigma-epsilon/sigmaepsilon.solid.material/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/sigma-epsilon/sigmaepsilon.solid.material/tree/main)
 [![codecov](https://codecov.io/gh/sigma-epsilon/sigmaepsilon.solid.material/graph/badge.svg?token=7JKJ3HHSX3)](https://codecov.io/gh/sigma-epsilon/sigmaepsilon.solid.material)
@@ -12,7 +12,11 @@
 > **Note**
 > Here and there, implementation of the performance critical parts of the library rely on the JIT-compilation capabilities of Numba. This means that the library performs well even for large scale problems, on the expense of a longer first call.
 
-## Highlights
+## What is sigmaepsilon.solid.material?
+
+It is part of the `sigmaepsilon.solid` namespace, a set of namespace pacakes dedicated to different areas of solid mechanics. In this namespace, `sigmaepsilon.solid.material` is responsible for calculations related to mechanical investingations of solid materials. Similar to `sectionproperties`, but we are extending the possibilities by supporting similar functionality for membranes, plates, shells and 3d solids as well, for general anisotropy and utilization with a customizable failure mechanism. For 1d members we rely on `sectionproperties`.
+
+### Highlights
 
 * Classes to handle linear elastic materials of all kinds.
 * Elastic stiffness calculations for all kinds of models like Uflyand-Mindlin shells, 
@@ -112,8 +116,6 @@ Contributions are currently expected in any the following ways:
 In all cases, read the [contributing guidelines](CONTRIBUTING.md) before you do anything.
 
 ## Acknowledgements
-
-Although `sigmaepsilon.mesh` works without `VTK` or `PyVista` being installed, it is highly influenced by these libraries and works best with them around. Also shout-out for the developers of `NumPy`, `Scipy`, `Numba`, `Awkward`, `meshio` and all the third-party libraries involved in the project. Whithout these libraries the concept of writing performant, yet elegant Python code would be much more difficult.
 
 **A lot of the packages mentioned on this document here and the introduction have a citable research paper. If you use them in your work through sigmaepsilon.mesh, take a moment to check out their documentations and cite their papers.**
 

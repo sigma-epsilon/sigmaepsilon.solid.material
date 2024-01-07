@@ -79,7 +79,7 @@ extensions = [
     "sphinx_design",
     "sphinx_inline_tabs",
     # "pyvista.ext.plot_directive",
-    "sphinx_plotly_directive",
+    # "sphinx_plotly_directive",
     "matplotlib.sphinxext.plot_directive",
     # "sphinx_k3d_screenshot"
 ]

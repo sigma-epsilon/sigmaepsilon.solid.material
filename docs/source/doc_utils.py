@@ -57,7 +57,7 @@ def generate_user_guide_rst(
         f.write("\n")
         
         f.write(r".. toctree::" + "\n")
-        f.write(r"    :maxdepth: 2" + "\n")
+        f.write(r"    :maxdepth: 1" + "\n")
         if reversed:
             f.write(r"    :reversed:" + "\n")
         f.write("\n")
