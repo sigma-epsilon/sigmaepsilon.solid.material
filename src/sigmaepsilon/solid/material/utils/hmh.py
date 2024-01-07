@@ -27,7 +27,7 @@ def HMH_M(strs: ndarray) -> float:
         The stresses s11, s22, s12.
     """
     s11, s22, s12 = strs
-    return np.sqrt(s11 ** 2 - s11 * s22 + s22 ** 2 + 3 * s12 ** 2)
+    return np.sqrt(s11**2 - s11 * s22 + s22**2 + 3 * s12**2)
 
 
 @njit(nogil=True, cache=__cache)
@@ -71,9 +71,11 @@ def HMH_M_v(s11, s22, s12):
     >>> HMH_M_v(*(np.random.rand(10),)*3).shape
     (10,)
     """
-    return np.sqrt(s11 ** 2 - s11 * s22 + s22 ** 2 + 3 * s12 ** 2)
+    return np.sqrt(s11**2 - s11 * s22 + s22**2 + 3 * s12**2)
+
 
 if __has_numba_cuda__:
+
     @vectorize("f8(f8, f8, f8)", target="cuda")
     def HMH_M_v_cuda(s11, s22, s12):
         """
@@ -89,7 +91,17 @@ if __has_numba_cuda__:
         >>> HMH_M_v(*(np.random.rand(10),)*3).shape
         (10,)
         """
-        return math.sqrt(s11 ** 2 - s11 * s22 + s22 ** 2 + 3 * s12 ** 2)
+        return math.sqrt(s11**2 - s11 * s22 + s22**2 + 3 * s12**2)
+
+else:
+
+    def HMH_M_v_cuda(s11, s22, s12):
+        raise NotImplementedError(
+            (
+                "You need to install the proper version of the cuda toolkit"
+                " or choose another device."
+            )
+        )
 
 
 @njit(nogil=True, cache=__cache)
@@ -110,7 +122,7 @@ def HMH_S(strs: ndarray) -> float:
     """
     s11, s22, s12, s13, s23 = strs
     return np.sqrt(
-        s11 ** 2 - s11 * s22 + s22 ** 2 + 3 * s12 ** 2 + 3 * s13 ** 2 + 3 * s23 ** 2
+        s11**2 - s11 * s22 + s22**2 + 3 * s12**2 + 3 * s13**2 + 3 * s23**2
     )
 
 
@@ -131,7 +143,7 @@ def HMH_S_v(s11, s22, s12, s13, s23) -> float:
     1.0
     """
     return np.sqrt(
-        s11 ** 2 - s11 * s22 + s22 ** 2 + 3 * s12 ** 2 + 3 * s13 ** 2 + 3 * s23 ** 2
+        s11**2 - s11 * s22 + s22**2 + 3 * s12**2 + 3 * s13**2 + 3 * s23**2
     )
 
 
@@ -173,7 +185,7 @@ def HMH_3d(strs: ndarray) -> float:
     s11, s22, s33, s23, s13, s12 = strs
     return np.sqrt(
         0.5 * ((s11 - s22) ** 2 + (s22 - s33) ** 2 + (s33 - s11) ** 2)
-        + 3 * (s12 ** 2 + s13 ** 2 + s23 ** 2)
+        + 3 * (s12**2 + s13**2 + s23**2)
     )
 
 
@@ -206,10 +218,12 @@ def HMH_3d_v(s11, s22, s33, s23, s13, s12):
     """
     return np.sqrt(
         0.5 * ((s11 - s22) ** 2 + (s22 - s33) ** 2 + (s33 - s11) ** 2)
-        + 3 * (s12 ** 2 + s13 ** 2 + s23 ** 2)
+        + 3 * (s12**2 + s13**2 + s23**2)
     )
 
+
 if __has_numba_cuda__:
+
     @vectorize("f8(f8, f8, f8, f8, f8, f8)", target="cuda")
     def HMH_3d_v_cuda(s11, s22, s33, s23, s13, s12):
         """
@@ -220,10 +234,9 @@ if __has_numba_cuda__:
         """
         return math.sqrt(
             0.5 * ((s11 - s22) ** 2 + (s22 - s33) ** 2 + (s33 - s11) ** 2)
-            + 3 * (s12 ** 2 + s13 ** 2 + s23 ** 2)
+            + 3 * (s12**2 + s13**2 + s23**2)
         )
 
-if __has_numba_cuda__:
     @guvectorize(
         [(float64, float64, float64, float64, float64, float64, float64[:])],
         "(),(),(),(),(),()->()",
@@ -238,7 +251,25 @@ if __has_numba_cuda__:
         """
         output[0] = math.sqrt(
             0.5 * ((s11 - s22) ** 2 + (s22 - s33) ** 2 + (s33 - s11) ** 2)
-            + 3 * (s12 ** 2 + s13 ** 2 + s23 ** 2)
+            + 3 * (s12**2 + s13**2 + s23**2)
+        )
+
+else:
+
+    def HMH_3d_v_cuda(s11, s22, s33, s23, s13, s12, output):
+        raise NotImplementedError(
+            (
+                "You need to install the proper version of the cuda toolkit"
+                " or choose another device."
+            )
+        )
+
+    def HMH_3d_guv_cuda(s11, s22, s33, s23, s13, s12, output):
+        raise NotImplementedError(
+            (
+                "You need to install the proper version of the cuda toolkit"
+                " or choose another device."
+            )
         )
 
 
@@ -319,8 +350,14 @@ if __has_numba_cuda__:
 
         return output
 
-
 else:
+    def HMH_3d_v_numba_cuda_kernel(*args, **kwargs):
+        raise NotImplementedError(
+            (
+                "You need to install the proper version of the cuda toolkit"
+                " or choose another device."
+            )
+        )
 
     def divide_array(arr, divisor) -> ndarray:
         arr /= divisor
@@ -350,10 +387,20 @@ if __has_cupy__:
 
         cupy_array = cp.sqrt(
             0.5 * ((s11 - s22) ** 2 + (s22 - s33) ** 2 + (s33 - s11) ** 2)
-            + 3 * (s12 ** 2 + s13 ** 2 + s23 ** 2)
+            + 3 * (s12**2 + s13**2 + s23**2)
         )
 
         if not all_device:
             return cp.asnumpy(cupy_array)
         else:
             return cupy_array
+
+else:
+
+    def HMH_3d_v_cuda_cp(s11, s22, s33, s23, s13, s12, output):
+        raise NotImplementedError(
+            (
+                "You need to install CuPy and the proper version of the cuda toolkit"
+                " or choose another device."
+            )
+        )
