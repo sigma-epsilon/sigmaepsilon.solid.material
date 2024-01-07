@@ -92,9 +92,9 @@ class HuberMisesHenckyFailureCriterion(AbstractFailureCriterion):
         if isinstance(value, Iterable):
             if not len(value) == 1:
                 raise ValueError("Only one parameter is expected")
-            self.yield_strength = value[0]
+            self._yield_strength = value[0]
         elif isinstance(value, Number):
-            self.yield_strength = value
+            self._yield_strength = value
         else:
             raise TypeError("Invalid type.")
 
