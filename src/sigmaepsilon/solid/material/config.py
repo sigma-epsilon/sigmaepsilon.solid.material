@@ -3,7 +3,7 @@ try:  # pragma: no cover
 
     __has_cupy__ = True
 except Exception:
-    __has_cupy__ = True
+    __has_cupy__ = False
 
 
 try:  # pragma: no cover
@@ -18,4 +18,4 @@ try:  # pragma: no cover
     
     __has_numba_cuda__ = True
 except Exception:
-    __has_numba_cuda__ = True
+    __has_numba_cuda__ = False
