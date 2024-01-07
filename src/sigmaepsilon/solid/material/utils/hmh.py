@@ -73,23 +73,23 @@ def HMH_M_v(s11, s22, s12):
     """
     return np.sqrt(s11 ** 2 - s11 * s22 + s22 ** 2 + 3 * s12 ** 2)
 
+if __has_numba_cuda__:
+    @vectorize("f8(f8, f8, f8)", target="cuda")
+    def HMH_M_v_cuda(s11, s22, s12):
+        """
+        Evaluates the Huber-Mises-Hencky formula for membranes on the gpu.
 
-@vectorize("f8(f8, f8, f8)", target="cuda")
-def HMH_M_v_cuda(s11, s22, s12):
-    """
-    Evaluates the Huber-Mises-Hencky formula for membranes on the gpu.
+        Parameters
+        ----------
+        strs: numpy.ndarray
+            The stresses s11, s22, s12.
 
-    Parameters
-    ----------
-    strs: numpy.ndarray
-        The stresses s11, s22, s12.
-
-    >>> from sigmaepsilon.solid.material.utils import HMH_M_v
-    >>> import numpy as np
-    >>> HMH_M_v(*(np.random.rand(10),)*3).shape
-    (10,)
-    """
-    return math.sqrt(s11 ** 2 - s11 * s22 + s22 ** 2 + 3 * s12 ** 2)
+        >>> from sigmaepsilon.solid.material.utils import HMH_M_v
+        >>> import numpy as np
+        >>> HMH_M_v(*(np.random.rand(10),)*3).shape
+        (10,)
+        """
+        return math.sqrt(s11 ** 2 - s11 * s22 + s22 ** 2 + 3 * s12 ** 2)
 
 
 @njit(nogil=True, cache=__cache)
@@ -209,37 +209,37 @@ def HMH_3d_v(s11, s22, s33, s23, s13, s12):
         + 3 * (s12 ** 2 + s13 ** 2 + s23 ** 2)
     )
 
+if __has_numba_cuda__:
+    @vectorize("f8(f8, f8, f8, f8, f8, f8)", target="cuda")
+    def HMH_3d_v_cuda(s11, s22, s33, s23, s13, s12):
+        """
+        Vectorized evaluation of the HMH failure criterion.
 
-@vectorize("f8(f8, f8, f8, f8, f8, f8)", target="cuda")
-def HMH_3d_v_cuda(s11, s22, s33, s23, s13, s12):
-    """
-    Vectorized evaluation of the HMH failure criterion.
+        The input values s11, s22, s33, s23, s13, s12 can be
+        arbitrary dimensional arrays.
+        """
+        return math.sqrt(
+            0.5 * ((s11 - s22) ** 2 + (s22 - s33) ** 2 + (s33 - s11) ** 2)
+            + 3 * (s12 ** 2 + s13 ** 2 + s23 ** 2)
+        )
 
-    The input values s11, s22, s33, s23, s13, s12 can be
-    arbitrary dimensional arrays.
-    """
-    return math.sqrt(
-        0.5 * ((s11 - s22) ** 2 + (s22 - s33) ** 2 + (s33 - s11) ** 2)
-        + 3 * (s12 ** 2 + s13 ** 2 + s23 ** 2)
+if __has_numba_cuda__:
+    @guvectorize(
+        [(float64, float64, float64, float64, float64, float64, float64[:])],
+        "(),(),(),(),(),()->()",
+        target="cuda",
     )
+    def HMH_3d_guv_cuda(s11, s22, s33, s23, s13, s12, output):
+        """
+        Vectorized evaluation of the HMH failure criterion.
 
-
-@guvectorize(
-    [(float64, float64, float64, float64, float64, float64, float64[:])],
-    "(),(),(),(),(),()->()",
-    target="cuda",
-)
-def HMH_3d_guv_cuda(s11, s22, s33, s23, s13, s12, output):
-    """
-    Vectorized evaluation of the HMH failure criterion.
-
-    The input values s11, s22, s33, s23, s13, s12 can be
-    arbitrary dimensional arrays.
-    """
-    output[0] = math.sqrt(
-        0.5 * ((s11 - s22) ** 2 + (s22 - s33) ** 2 + (s33 - s11) ** 2)
-        + 3 * (s12 ** 2 + s13 ** 2 + s23 ** 2)
-    )
+        The input values s11, s22, s33, s23, s13, s12 can be
+        arbitrary dimensional arrays.
+        """
+        output[0] = math.sqrt(
+            0.5 * ((s11 - s22) ** 2 + (s22 - s33) ** 2 + (s33 - s11) ** 2)
+            + 3 * (s12 ** 2 + s13 ** 2 + s23 ** 2)
+        )
 
 
 def HMH_3d_v_cuda_cp(s11, s22, s33, s23, s13, s12):
