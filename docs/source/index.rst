@@ -1,5 +1,5 @@
 =============================================================================================================
-**SigmaEpsilon.Mesh** - Data Structures, Computation and Visualization for Complex Polygonal Meshes in Python
+**SigmaEpsilon.Solid.Material** - Data Structures, Computation and Visualization for Complex Polygonal Meshes in Python
 =============================================================================================================
 
 .. toctree::
@@ -11,9 +11,6 @@
    Gallery <examples_gallery>
    API Reference <api>
    Development <development>
-
-.. image:: logo.png
-    :align: center
 
 **Version**: |version|
 
@@ -78,7 +75,7 @@ You can install the project from PyPI with `pip`:
 
 .. code-block:: shell
 
-   $ pip install sigmaepsilon.mesh
+   $ pip install sigmaepsilon.solid.material
 
 
 Contents

@@ -1,13 +1,11 @@
 # **SigmaEpsilon.Solid.Material** - Solid Mechanics in Python
 
-![ ](logo.png)
-
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/sigma-epsilon/sigmaepsilon.solid.material/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/sigma-epsilon/sigmaepsilon.solid.material/tree/main)
 [![codecov](https://codecov.io/gh/sigma-epsilon/sigmaepsilon.solid.material/graph/badge.svg?token=7JKJ3HHSX3)](https://codecov.io/gh/sigma-epsilon/sigmaepsilon.solid.material)
 [![Documentation Status](https://readthedocs.org/projects/sigmaepsilonsolidmaterial/badge/?version=latest)](https://sigmaepsilonsolidmaterial.readthedocs.io/en/latest/?badge=latest)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PyPI](https://badge.fury.io/py/sigmaepsilon.solid.material.svg)](https://pypi.org/project/sigmaepsilon.solid.material)
-[![Python 3.7‒3.10](https://img.shields.io/badge/python-3.7%E2%80%923.10-blue)](https://www.python.org)
+[![Python 3.8‒3.10](https://img.shields.io/badge/python-3.7%E2%80%923.10-blue)](https://www.python.org)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Requirements Status](https://dependency-dash.repo-helper.uk/github/sigma-epsilon/sigmaepsilon.solid.material/badge.svg)](https://dependency-dash.repo-helper.uk/github/sigma-epsilon/sigmaepsilon.solid.material)
 
@@ -24,7 +22,7 @@ The [documentation](https://sigmaepsilonsolidmaterial.readthedocs.io/en/latest/)
 
 ## Installation
 
-sigmaepsilon.solid.material can be installed from PyPI using `pip` on Python >= 3.7:
+sigmaepsilon.solid.material can be installed from PyPI using `pip` on Python >= 3.8:
 
 ```console
 >>> pip install sigmaepsilon.solid.material

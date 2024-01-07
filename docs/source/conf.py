@@ -15,11 +15,6 @@ import os
 from datetime import date
 import warnings
 
-import pyvista
-
-if sys.platform.startswith("linux"):
-    pyvista.start_xvfb()
-
 
 import sigmaepsilon.mesh as library
 
@@ -33,15 +28,15 @@ sys.path.insert(0, os.path.abspath("../../src"))
 
 from doc_utils import generate_examples_gallery_rst
 
-generate_examples_gallery_rst(
+"""generate_examples_gallery_rst(
     title="Gallery", filename="examples_gallery", foldername="examples", reversed=True
-)
+)"""
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = library.__pkg_name__
-copyright = "2014-%s, Bence Balogh" % date.today().year
+copyright = "2024-%s, Bence Balogh" % date.today().year
 author = "Bence Balogh"
 version = library.__version__
 release = "v" + library.__version__
@@ -116,6 +111,7 @@ intersphinx_mapping = {
     "pandas": (r"https://pandas.pydata.org/pandas-docs/stable/", None),
     "sigmaepsilon.core": (r"https://sigmaepsiloncore.readthedocs.io/en/latest/", None),
     "sigmaepsilon.math": (r"https://sigmaepsilonmath.readthedocs.io/en/latest/", None),
+    "sigmaepsilon.mesh": (r"https://sigmaepsilonmesh.readthedocs.io/en/latest/", None),
     "sigmaepsilon.deepdict": (
         r"https://sigmaepsilondeepdict.readthedocs.io/en/latest/",
         None,
@@ -147,7 +143,6 @@ mathjax3_config = {
 # -- Image scapers configuration -------------------------------------------------
 
 image_scrapers = (
-    pyvista.Scraper(),
     "matplotlib",
 )
 
@@ -181,7 +176,7 @@ html_theme_options = {
     ],
     "logo": {
         # Because the logo is also a homepage link, including "home" in the alt text is good practice
-        "text": "SigmaEpsilon.Mesh",
+        "text": "SigmaEpsilon.Solid.Material",
     },
 }
 html_js_files = [
