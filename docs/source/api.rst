@@ -10,5 +10,5 @@ understanding of the key concepts.
 .. toctree::
     :maxdepth: 6
     
-    /api/api_cells
+    /api/api_all
     

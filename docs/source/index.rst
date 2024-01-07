@@ -21,24 +21,15 @@
 :ref:`API Reference` |
 `Source Repository <https://github.com/sigma-epsilon/sigmaepsilon.mesh>`_
 
-.. _sigmaepsilon.mesh: https://sigmaepsilon.mesh.readthedocs.io/en/latest/
-.. _VTK: https://vtk.org/
-.. _PyVista: https://docs.pyvista.org/
-.. _K3D: http://k3d-jupyter.org/
+.. _sigmaepsilon.solid.material: https://sigmaepsilon.solid.material.readthedocs.io/en/latest/
 .. _Matplotlib: https://matplotlib.org/
-.. _Plotly: https://plotly.com/python/
-.. _Awkward: https://awkward-array.org/doc/main/
-.. _Pandas: https://vtk.org/
-.. _PyArrow: https://arrow.apache.org/docs/python/index.html
 .. _NumPy: https://numpy.org/doc/stable/index.html
 .. _Numba: https://numba.pydata.org/
-.. _NetworkX: https://networkx.org/documentation/stable/index.html
 .. _SciPy: https://scipy.org/
-.. _scikit-learn: https://scikit-learn.org/stable/
 .. _SymPy: https://www.sympy.org/en/index.html
 
 
-The `sigmaepsilon.mesh`_ library aims to provide the tools to build and analyse polygonal meshes 
+The `sigmaepsilon.solid.material`_ library aims to provide the tools to build and analyse polygonal meshes 
 with complex topologies. Meshes can be built like a dictionary, using arbitrarily nested layouts and 
 then be translated to other formats including `VTK`_ and `PyVista`_. For plotting, there is also 
 support for `K3D`_, `Matplotlib`_ and `Plotly`_.
@@ -48,25 +39,13 @@ data to the points or the cells in a mesh, also providing interfaces to other po
 `Pandas`_ or `PyArrow`_. Implementations are fast as they rely on the vector math capabilities of 
 `NumPy`_, while other computationally sensitive calculations are JIT-compiled using `Numba`_.
 
-Here and there we also use `NetworkX`_, `SciPy`_, `SymPy`_ and `scikit-learn`_.
+Here and there we also use `SciPy`_, and `SymPy`_.
 
 
 Highlights
 ==========
 
-* Classes to handle points, pointclouds, reference frames and jagged topologies.
-* Array-like mesh composition with a Numba-jittable database model. Join or split meshes, attach numerical data and 
-  save to and load from disk.
-* Simplified and preconfigured plotting facility using PyVista.
-* Grid generation in 1, 2 and 3 dimensions for arbitrarily structured Lagrangian cells.
-* A mechanism for all sorts of geometrical and topological transformations.
-* A customizable nodal distribution mechanism to effortlessly pass around data between points and cells.
-* Generation of *Pseudo Peripheral Nodes*, *Rooted Level Structures* and *Adjancency Matrices* for arbitrary polygonal meshes.
-* Symbolic shape function generation for arbitrarily structured Lagrangian cells in 1, 2 and 3 dimensions with an 
-  extendible interpolation and extrapolation mechanism.
-* Connections to popular third party libraries like `networkx`, `pandas`, `vtk`, `PyVista` and more.
-* The ability to read from a wide range of formats thanks to the combined power of `vtk`, `PyVista` and `meshio`.
-
+* Classes to handle linear elastic materials of all kinds.
 
 Installation
 ============

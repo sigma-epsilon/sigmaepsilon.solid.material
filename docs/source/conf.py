@@ -26,11 +26,24 @@ from sphinx.config import Config
 sys.path.insert(0, os.path.abspath("."))
 sys.path.insert(0, os.path.abspath("../../src"))
 
-from doc_utils import generate_examples_gallery_rst
+from doc_utils import generate_examples_gallery_rst, generate_user_guide_rst
 
-"""generate_examples_gallery_rst(
+generate_examples_gallery_rst(
     title="Gallery", filename="examples_gallery", foldername="examples", reversed=True
-)"""
+)
+
+user_guide_description = """
+The user guide provides in-depth information on the key concepts of the library with 
+useful background information and explanation.
+"""
+
+generate_user_guide_rst(
+    title="User Guide",
+    filename="user_guide",
+    foldername="notebooks",
+    reversed=False,
+    description=user_guide_description,
+)
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -65,10 +78,10 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx_design",
     "sphinx_inline_tabs",
-    #"pyvista.ext.plot_directive",
+    # "pyvista.ext.plot_directive",
     "sphinx_plotly_directive",
     "matplotlib.sphinxext.plot_directive",
-    #"sphinx_k3d_screenshot"
+    # "sphinx_k3d_screenshot"
 ]
 
 autosummary_generate = True
@@ -142,9 +155,7 @@ mathjax3_config = {
 
 # -- Image scapers configuration -------------------------------------------------
 
-image_scrapers = (
-    "matplotlib",
-)
+image_scrapers = ("matplotlib",)
 
 # Remove matplotlib agg warnings from generated doc when using plt.show
 warnings.filterwarnings(
