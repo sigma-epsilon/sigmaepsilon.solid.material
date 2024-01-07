@@ -14,10 +14,12 @@ class FunctionEvaluator(Callable):
         fnc: Callable,
         vectorized: Optional[bool] = False,
         bulk: Optional[bool] = False,
+        cuda: Optional[bool] = False,
     ):
         self._fnc = fnc
         self._vectorized = vectorized
         self._bulk = bulk
+        self._cuda = cuda
 
     @property
     def is_vectorized(self) -> bool:
@@ -32,6 +34,13 @@ class FunctionEvaluator(Callable):
         Returns `True` if the function accepts inputs in 'bulk' mode.
         """
         return self._bulk
+    
+    @property
+    def is_cuda(self) -> bool:
+        """
+        Returns `True` if the function evaluates on the gpu.
+        """
+        return self._cuda
 
     def __call__(self, *args, **kwargs):
         return self._fnc(*args, **kwargs)
