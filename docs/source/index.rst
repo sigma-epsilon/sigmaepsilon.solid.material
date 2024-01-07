@@ -19,7 +19,7 @@
 :doc:`user_guide` |
 :doc:`examples_gallery` |
 :ref:`API Reference` |
-`Source Repository <https://github.com/sigma-epsilon/sigmaepsilon.mesh>`_
+`Source Repository <https://github.com/sigma-epsilon/sigmaepsilon.solid.mesh>`_
 
 .. _sigmaepsilon.solid.material: https://sigmaepsilon.solid.material.readthedocs.io/en/latest/
 .. _Matplotlib: https://matplotlib.org/
