@@ -11,9 +11,11 @@ orbs:
 
 jobs:
   build_test:
-    docker:
-      - image: cimg/python:3.10
+    machine:
+      image: linux-cuda-12:default
+    resource_class: gpu.nvidia.medium
     steps:
+      - run: nvidia-smi
       - checkout  # checkout source code to working directory
       - python/install-packages:
           pkg-manager: pip
@@ -33,8 +35,9 @@ jobs:
           command: python -m pytest
   
   test_pypi_publish:
-    docker:
-      - image: cimg/python:3.10
+    machine:
+      image: linux-cuda-12:default
+    resource_class: gpu.nvidia.medium
     steps:
       - checkout  # checkout source code to working directory
       - run:
@@ -47,8 +50,9 @@ jobs:
             python -m twine upload --repository testpypi --skip-existing dist/*
 
   pypi_publish:
-    docker:
-      - image: cimg/python:3.10
+    machine:
+      image: linux-cuda-12:default
+    resource_class: gpu.nvidia.medium
     steps:
       - checkout  # checkout source code to working directory
       - run:
@@ -66,8 +70,9 @@ jobs:
     # A list of available CircleCI docker convenience images are available here: https://circleci.com/developer/images/image/cimg/python
     # The executor is the environment in which the steps below will be executed - below will use a python 3.9 container
     # Change the version below to your required version of python
-    docker:
-      - image: cimg/python:3.10
+    machine:
+      image: linux-cuda-12:default
+    resource_class: gpu.nvidia.medium
     # Checkout the code as the first step. This is a dedicated CircleCI step.
     # The python orb's install-packages step will install the dependencies from a Pipfile via Pipenv by default.
     # Here we're making sure we use just use the system-wide pip. By default it uses the project root's requirements.txt.
