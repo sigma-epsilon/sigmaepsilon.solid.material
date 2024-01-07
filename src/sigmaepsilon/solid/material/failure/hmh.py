@@ -1,5 +1,6 @@
 from typing import Optional, Tuple, Union, ClassVar, Iterable, MutableMapping
 from collections import defaultdict
+from numbers import Number
 
 import numpy as np
 from numpy import ndarray, ascontiguousarray as ascont
@@ -21,7 +22,7 @@ from ..utils.hmh import (
 )
 from ..enums import MaterialModelType
 from ..evaluator import FunctionEvaluator
-
+from .abstract import AbstractFailureCriterion
 
 __all__ = [
     "HuberMisesHenckyFailureCriterion",
@@ -30,7 +31,7 @@ __all__ = [
 ]
 
 
-class HuberMisesHenckyFailureCriterion:
+class HuberMisesHenckyFailureCriterion(AbstractFailureCriterion):
     """
     A class to represent the Huber-Mises-Hencky yield condition.
 
@@ -41,9 +42,9 @@ class HuberMisesHenckyFailureCriterion:
     yield_strength: float
     """
 
-    model_type: ClassVar[
-        Union[MaterialModelType, Iterable[MaterialModelType]]
-    ] = MaterialModelType.DEFAULT
+    model_type = MaterialModelType.DEFAULT
+    number_of_stress_arguments: ClassVar[int] = 1
+    failure_evaluator = None
 
     def __init__(
         self,
@@ -71,6 +72,31 @@ class HuberMisesHenckyFailureCriterion:
 
         self._yield_strength = yield_strength
         self._evaluator = evaluator
+
+    @property
+    def number_of_strength_parameters(self) -> int:
+        return 1
+
+    @property
+    def params(self) -> Iterable[float]:
+        """
+        Returns the strength parameters.
+        """
+        return [self.yield_strength]
+
+    @params.setter
+    def params(self, value) -> None:
+        """
+        Sets the strength parameters.
+        """
+        if isinstance(value, Iterable):
+            if not len(value) == 1:
+                raise ValueError("Only one parameter is expected")
+            self.yield_strength = value[0]
+        elif isinstance(value, Number):
+            self.yield_strength = value
+        else:
+            raise TypeError("Invalid type.")
 
     @property
     def yield_strength(self) -> float:
