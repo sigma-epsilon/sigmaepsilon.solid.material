@@ -2,17 +2,22 @@ from typing import Optional, Tuple, Union, ClassVar, Iterable, MutableMapping
 from collections import defaultdict
 
 import numpy as np
-from numpy import ndarray
+from numpy import ndarray, ascontiguousarray as ascont
 
 from sigmaepsilon.math import atleast2d
 
 from ..utils.hmh import (
     HMH_3d_v,
     HMH_3d_multi,
+    HMH_3d_v_cuda,
+    HMH_3d_guv_cuda,
+    HMH_3d_v_cuda_cp,
+    HMH_3d_v_numba_cuda_kernel,
     HMH_S_multi,
     HMH_S_v,
     HMH_M_multi,
     HMH_M_v,
+    divide_array
 )
 from ..enums import MaterialModelType
 from ..evaluator import FunctionEvaluator
@@ -49,10 +54,14 @@ class HuberMisesHenckyFailureCriterion:
             evaluator = defaultdict(lambda: evaluator)
 
         if evaluator is None:
-            evaluator = dict(
-                vectorized=FunctionEvaluator(HMH_3d_v, vectorized=True),
-                bulk=FunctionEvaluator(HMH_3d_multi, bulk=True),
-            )
+            evaluator = {
+                "vectorized": FunctionEvaluator(HMH_3d_v, vectorized=True),
+                "bulk": FunctionEvaluator(HMH_3d_multi, bulk=True),
+                "cuda": FunctionEvaluator(HMH_3d_v_cuda, vectorized=True, cuda=True),
+                "cuda-guv": FunctionEvaluator(HMH_3d_guv_cuda, vectorized=True, cuda=True),
+                "cuda-kernel": FunctionEvaluator(HMH_3d_v_numba_cuda_kernel, vectorized=True, cuda=True),
+                "cuda-cp": FunctionEvaluator(HMH_3d_v_cuda_cp, vectorized=True, cuda=True),
+            }
 
         self._yield_strength = yield_strength
         self._evaluator = evaluator
@@ -72,26 +81,87 @@ class HuberMisesHenckyFailureCriterion:
         """
         return self._evaluator
 
-    def _utilization(self, stresses: Union[ndarray, Tuple[ndarray]]) -> ndarray:
+    def _utilization(
+        self, stresses: Union[ndarray, Tuple[ndarray]], device: str = "cpu"
+    ) -> ndarray:
         if isinstance(stresses, tuple):
-            evaluator = self.evaluator.get("vectorized", None)
-            assert isinstance(evaluator, FunctionEvaluator) and evaluator.is_vectorized
-            return evaluator(*stresses) / self.yield_strength
-        else:
-            evaluator = self.evaluator.get("bulk", None)
-            if (isinstance(evaluator, FunctionEvaluator) and evaluator.is_bulk):
-                return evaluator(stresses) / self.yield_strength
-            elif (isinstance(evaluator, FunctionEvaluator) and evaluator.is_vectorized):
-                stresses = [stresses[:, i] for i in range(stresses.shape[-1])]
+            if device == "cpu":
+                evaluator = self.evaluator.get("vectorized", None)
+                assert (
+                    isinstance(evaluator, FunctionEvaluator) and evaluator.is_vectorized
+                )
                 return evaluator(*stresses) / self.yield_strength
-            else:  # pragma: no cover
-                raise NotImplementedError
-            
+            elif device == "cuda":
+                evaluator = self.evaluator.get("cuda", None)
+                assert (
+                    isinstance(evaluator, FunctionEvaluator) and evaluator.is_vectorized
+                    and evaluator.is_cuda
+                )
+                return evaluator(*stresses) / self.yield_strength
+            elif device == "cuda-guv":
+                evaluator = self.evaluator.get("cuda-guv", None)
+                assert (
+                    isinstance(evaluator, FunctionEvaluator) and evaluator.is_vectorized
+                    and evaluator.is_cuda
+                )
+                return evaluator(*stresses) / self.yield_strength
+            elif device == "cuda-kernel":
+                evaluator = self.evaluator.get("cuda-kernel", None)
+                assert (
+                    isinstance(evaluator, FunctionEvaluator) and evaluator.is_vectorized
+                    and evaluator.is_cuda
+                )
+                output = evaluator(*stresses)
+                divide_array(output, self.yield_strength)
+                return output
+            elif device == "cuda-cp":
+                evaluator = self.evaluator.get("cuda-cp", None)
+                assert (
+                    isinstance(evaluator, FunctionEvaluator) and evaluator.is_vectorized
+                    and evaluator.is_cuda
+                )
+                return evaluator(*stresses) / self.yield_strength
+            else:
+                raise NotImplementedError(
+                    f"This calculation is not implemented for the specified device '{device}'"
+                )
+        else:
+            if device == "cpu":
+                evaluator = self.evaluator.get("bulk", None)
+                if isinstance(evaluator, FunctionEvaluator) and evaluator.is_bulk:
+                    return evaluator(stresses) / self.yield_strength
+                elif isinstance(evaluator, FunctionEvaluator) and evaluator.is_vectorized:
+                    stresses = [stresses[:, i] for i in range(stresses.shape[-1])]
+                    return evaluator(*stresses) / self.yield_strength
+                else:  # pragma: no cover
+                    raise NotImplementedError
+            elif device == "cuda":
+                evaluator = self.evaluator.get("cuda", None)
+                assert (
+                    isinstance(evaluator, FunctionEvaluator) and evaluator.is_vectorized
+                    and evaluator.is_cuda
+                )
+                stresses = [ascont(stresses[:, i]) for i in range(stresses.shape[-1])]
+                return evaluator(*stresses) / self.yield_strength
+            elif device == "cuda-cp":
+                evaluator = self.evaluator.get("cuda-cp", None)
+                assert (
+                    isinstance(evaluator, FunctionEvaluator) and evaluator.is_vectorized
+                    and evaluator.is_cuda
+                )
+                stresses = [ascont(stresses[:, i]) for i in range(stresses.shape[-1])]
+                return evaluator(*stresses) / self.yield_strength
+            else:
+                raise NotImplementedError(
+                    f"This calculation is not implemented for the specified device '{device}'"
+                )
+
     def utilization(
         self,
         *,
         stresses: Optional[Union[ndarray, Tuple[ndarray], None]] = None,
         squeeze: bool = True,
+        device: str = "cpu",
         **__,
     ) -> Union[ndarray, float]:
         """
@@ -109,21 +179,24 @@ class HuberMisesHenckyFailureCriterion:
         elif isinstance(stresses, tuple):
             num_component = len(stresses)
         else:
+            stress_type = type(stresses)
             raise TypeError(
-                f"Expected a NumPy arrar or a tuple of them, got {type(stresses)}"
+                f"Expected a NumPy arrar or a tuple of them, got {stress_type}"
             )
 
         if isinstance(self.model_type, Iterable):
-            num_component_expected = self.model_type[0].number_of_material_stress_variables
+            num_component_expected = self.model_type[
+                0
+            ].number_of_material_stress_variables
         else:
             num_component_expected = self.model_type.number_of_material_stress_variables
-        
+
         if not num_component == num_component_expected:  # pragma: no cover
             raise ValueError(
                 f"Expected {num_component_expected} stress components, got {num_component}"
             )
 
-        result = self._utilization(stresses)
+        result = self._utilization(stresses, device)
 
         return result if not squeeze else np.squeeze(result)
 
