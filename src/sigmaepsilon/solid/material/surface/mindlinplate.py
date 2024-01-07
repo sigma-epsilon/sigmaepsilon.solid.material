@@ -13,28 +13,37 @@ from ..enums import MaterialModelType
 
 __all__ = ["MindlinPlateSection"]
 
+
 class MindlinPlateLayer(MindlinShellLayer):
     """
     A class for layers of a membrane.
     """
-    
-    def stresses(self, *, strains:ndarray, stresses:ndarray, z:float=None, out:ndarray=None) -> ndarray:
+
+    def stresses(
+        self,
+        *,
+        strains: ndarray,
+        stresses: ndarray,
+        z: float = None,
+        out: ndarray = None
+    ) -> ndarray:
         C = self.material_elastic_stiffness_matrix()
         num_component = C.shape[0]
-        
+
         strains = atleast2d(strains, front=True)
         num_data = strains.shape[0]
-        
+
         if out is None:
             out = np.zeros((num_data, num_component), dtype=float)
-        
+
         out[:, :3] = (C[:3, :3] @ (z * strains[:, :3]).T).T
 
         sfx, sfy = z_to_shear_factors(z, self._sfx, self._sfy)
         out[:, 3] = sfx * stresses[:, -2]
         out[:, 4] = sfy * stresses[:, -1]
-        
+
         return out
+
 
 class MindlinPlateSection(MindlinShellSection):
     """

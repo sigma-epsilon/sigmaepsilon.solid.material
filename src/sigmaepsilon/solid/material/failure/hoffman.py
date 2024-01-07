@@ -243,7 +243,7 @@ class HoffmanFailureCriterion:
         if method == "auto":
             assert solver_params is None
             method = "bga" if x0 is None else "Nelder-Mead"
-            
+
         if solver_params is None:
             solver_params = dict()
 
@@ -262,7 +262,7 @@ class HoffmanFailureCriterion:
                 return penalty
 
         num_params = self.number_of_strength_parameters
-        
+
         if not isinstance(method, str):
             method_type = type(method)
             raise TypeError(f"Parameter 'method' must be a string, got {method_type}")

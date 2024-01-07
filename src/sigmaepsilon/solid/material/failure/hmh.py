@@ -17,7 +17,7 @@ from ..utils.hmh import (
     HMH_S_v,
     HMH_M_multi,
     HMH_M_v,
-    divide_array
+    divide_array,
 )
 from ..enums import MaterialModelType
 from ..evaluator import FunctionEvaluator
@@ -58,9 +58,15 @@ class HuberMisesHenckyFailureCriterion:
                 "vectorized": FunctionEvaluator(HMH_3d_v, vectorized=True),
                 "bulk": FunctionEvaluator(HMH_3d_multi, bulk=True),
                 "cuda": FunctionEvaluator(HMH_3d_v_cuda, vectorized=True, cuda=True),
-                "cuda-guv": FunctionEvaluator(HMH_3d_guv_cuda, vectorized=True, cuda=True),
-                "cuda-kernel": FunctionEvaluator(HMH_3d_v_numba_cuda_kernel, vectorized=True, cuda=True),
-                "cuda-cp": FunctionEvaluator(HMH_3d_v_cuda_cp, vectorized=True, cuda=True),
+                "cuda-guv": FunctionEvaluator(
+                    HMH_3d_guv_cuda, vectorized=True, cuda=True
+                ),
+                "cuda-kernel": FunctionEvaluator(
+                    HMH_3d_v_numba_cuda_kernel, vectorized=True, cuda=True
+                ),
+                "cuda-cp": FunctionEvaluator(
+                    HMH_3d_v_cuda_cp, vectorized=True, cuda=True
+                ),
             }
 
         self._yield_strength = yield_strength
@@ -94,21 +100,24 @@ class HuberMisesHenckyFailureCriterion:
             elif device == "cuda":
                 evaluator = self.evaluator.get("cuda", None)
                 assert (
-                    isinstance(evaluator, FunctionEvaluator) and evaluator.is_vectorized
+                    isinstance(evaluator, FunctionEvaluator)
+                    and evaluator.is_vectorized
                     and evaluator.is_cuda
                 )
                 return evaluator(*stresses) / self.yield_strength
             elif device == "cuda-guv":
                 evaluator = self.evaluator.get("cuda-guv", None)
                 assert (
-                    isinstance(evaluator, FunctionEvaluator) and evaluator.is_vectorized
+                    isinstance(evaluator, FunctionEvaluator)
+                    and evaluator.is_vectorized
                     and evaluator.is_cuda
                 )
                 return evaluator(*stresses) / self.yield_strength
             elif device == "cuda-kernel":
                 evaluator = self.evaluator.get("cuda-kernel", None)
                 assert (
-                    isinstance(evaluator, FunctionEvaluator) and evaluator.is_vectorized
+                    isinstance(evaluator, FunctionEvaluator)
+                    and evaluator.is_vectorized
                     and evaluator.is_cuda
                 )
                 output = evaluator(*stresses)
@@ -117,7 +126,8 @@ class HuberMisesHenckyFailureCriterion:
             elif device == "cuda-cp":
                 evaluator = self.evaluator.get("cuda-cp", None)
                 assert (
-                    isinstance(evaluator, FunctionEvaluator) and evaluator.is_vectorized
+                    isinstance(evaluator, FunctionEvaluator)
+                    and evaluator.is_vectorized
                     and evaluator.is_cuda
                 )
                 return evaluator(*stresses) / self.yield_strength
@@ -130,7 +140,9 @@ class HuberMisesHenckyFailureCriterion:
                 evaluator = self.evaluator.get("bulk", None)
                 if isinstance(evaluator, FunctionEvaluator) and evaluator.is_bulk:
                     return evaluator(stresses) / self.yield_strength
-                elif isinstance(evaluator, FunctionEvaluator) and evaluator.is_vectorized:
+                elif (
+                    isinstance(evaluator, FunctionEvaluator) and evaluator.is_vectorized
+                ):
                     stresses = [stresses[:, i] for i in range(stresses.shape[-1])]
                     return evaluator(*stresses) / self.yield_strength
                 else:  # pragma: no cover
@@ -138,7 +150,8 @@ class HuberMisesHenckyFailureCriterion:
             elif device == "cuda":
                 evaluator = self.evaluator.get("cuda", None)
                 assert (
-                    isinstance(evaluator, FunctionEvaluator) and evaluator.is_vectorized
+                    isinstance(evaluator, FunctionEvaluator)
+                    and evaluator.is_vectorized
                     and evaluator.is_cuda
                 )
                 stresses = [ascont(stresses[:, i]) for i in range(stresses.shape[-1])]
@@ -146,7 +159,8 @@ class HuberMisesHenckyFailureCriterion:
             elif device == "cuda-cp":
                 evaluator = self.evaluator.get("cuda-cp", None)
                 assert (
-                    isinstance(evaluator, FunctionEvaluator) and evaluator.is_vectorized
+                    isinstance(evaluator, FunctionEvaluator)
+                    and evaluator.is_vectorized
                     and evaluator.is_cuda
                 )
                 stresses = [ascont(stresses[:, i]) for i in range(stresses.shape[-1])]

@@ -27,7 +27,7 @@ def HMH_M(strs: ndarray) -> float:
         The stresses s11, s22, s12.
     """
     s11, s22, s12 = strs
-    return np.sqrt(s11**2 - s11 * s22 + s22**2 + 3 * s12**2)
+    return np.sqrt(s11 ** 2 - s11 * s22 + s22 ** 2 + 3 * s12 ** 2)
 
 
 @njit(nogil=True, cache=__cache)
@@ -71,7 +71,7 @@ def HMH_M_v(s11, s22, s12):
     >>> HMH_M_v(*(np.random.rand(10),)*3).shape
     (10,)
     """
-    return np.sqrt(s11**2 - s11 * s22 + s22**2 + 3 * s12**2)
+    return np.sqrt(s11 ** 2 - s11 * s22 + s22 ** 2 + 3 * s12 ** 2)
 
 
 @vectorize("f8(f8, f8, f8)", target="cuda")
@@ -89,7 +89,7 @@ def HMH_M_v_cuda(s11, s22, s12):
     >>> HMH_M_v(*(np.random.rand(10),)*3).shape
     (10,)
     """
-    return math.sqrt(s11**2 - s11 * s22 + s22**2 + 3 * s12**2)
+    return math.sqrt(s11 ** 2 - s11 * s22 + s22 ** 2 + 3 * s12 ** 2)
 
 
 @njit(nogil=True, cache=__cache)
@@ -110,7 +110,7 @@ def HMH_S(strs: ndarray) -> float:
     """
     s11, s22, s12, s13, s23 = strs
     return np.sqrt(
-        s11**2 - s11 * s22 + s22**2 + 3 * s12**2 + 3 * s13**2 + 3 * s23**2
+        s11 ** 2 - s11 * s22 + s22 ** 2 + 3 * s12 ** 2 + 3 * s13 ** 2 + 3 * s23 ** 2
     )
 
 
@@ -131,7 +131,7 @@ def HMH_S_v(s11, s22, s12, s13, s23) -> float:
     1.0
     """
     return np.sqrt(
-        s11**2 - s11 * s22 + s22**2 + 3 * s12**2 + 3 * s13**2 + 3 * s23**2
+        s11 ** 2 - s11 * s22 + s22 ** 2 + 3 * s12 ** 2 + 3 * s13 ** 2 + 3 * s23 ** 2
     )
 
 
@@ -173,7 +173,7 @@ def HMH_3d(strs: ndarray) -> float:
     s11, s22, s33, s23, s13, s12 = strs
     return np.sqrt(
         0.5 * ((s11 - s22) ** 2 + (s22 - s33) ** 2 + (s33 - s11) ** 2)
-        + 3 * (s12**2 + s13**2 + s23**2)
+        + 3 * (s12 ** 2 + s13 ** 2 + s23 ** 2)
     )
 
 
@@ -206,7 +206,7 @@ def HMH_3d_v(s11, s22, s33, s23, s13, s12):
     """
     return np.sqrt(
         0.5 * ((s11 - s22) ** 2 + (s22 - s33) ** 2 + (s33 - s11) ** 2)
-        + 3 * (s12**2 + s13**2 + s23**2)
+        + 3 * (s12 ** 2 + s13 ** 2 + s23 ** 2)
     )
 
 
@@ -220,7 +220,7 @@ def HMH_3d_v_cuda(s11, s22, s33, s23, s13, s12):
     """
     return math.sqrt(
         0.5 * ((s11 - s22) ** 2 + (s22 - s33) ** 2 + (s33 - s11) ** 2)
-        + 3 * (s12**2 + s13**2 + s23**2)
+        + 3 * (s12 ** 2 + s13 ** 2 + s23 ** 2)
     )
 
 
@@ -238,7 +238,7 @@ def HMH_3d_guv_cuda(s11, s22, s33, s23, s13, s12, output):
     """
     output[0] = math.sqrt(
         0.5 * ((s11 - s22) ** 2 + (s22 - s33) ** 2 + (s33 - s11) ** 2)
-        + 3 * (s12**2 + s13**2 + s23**2)
+        + 3 * (s12 ** 2 + s13 ** 2 + s23 ** 2)
     )
 
 
@@ -268,7 +268,7 @@ if __has_numba_cuda__:
                 )
                 + 3 * (s12[idx] ** 2 + s13[idx] ** 2 + s23[idx] ** 2)
             )
-            
+
     @cuda.jit
     def _divide_array(arr, divisor):
         idx = cuda.grid(1)
@@ -287,23 +287,23 @@ if __has_numba_cuda__:
     def _are_all_numba_device_arrays(arrays: Iterable[ndarray]):
         return all(map(lambda arr: isinstance(arr, DeviceNDArray), arrays))
 
-    def divide_array(arr, divisor, threads_per_block=512, blocks_per_grid=None):        
+    def divide_array(arr, divisor, threads_per_block=512, blocks_per_grid=None):
         if blocks_per_grid is None:
             blocks_per_grid = int(np.ceil(len(arr) / threads_per_block))
 
         kernel = _divide_array[blocks_per_grid, threads_per_block]
         kernel(arr, divisor)
-    
+
     def HMH_3d_v_numba_cuda_kernel(
         *stresses, threads_per_block=512, blocks_per_grid=None
     ) -> ndarray:
         all_device = _are_all_numba_device_arrays(stresses)
-        
+
         if not all_device:
             device_stresses = tuple(map(lambda s: _to_device_array(s), stresses))
         else:
             device_stresses = stresses
-            
+
         output_device = cuda.device_array(stresses[0].shape[0], dtype=np.float64)
 
         if blocks_per_grid is None:
@@ -318,7 +318,10 @@ if __has_numba_cuda__:
             output = output_device.copy_to_host()
 
         return output
+
+
 else:
+
     def divide_array(arr, divisor) -> ndarray:
         arr /= divisor
         return arr
@@ -326,7 +329,7 @@ else:
 
 if __has_cupy__:
     import cupy as cp
-    
+
     def _are_all_cupy_device_arrays(arrays: Iterable[ndarray]):
         return all(map(lambda arr: isinstance(arr, cp.ndarray), arrays))
 
@@ -339,17 +342,17 @@ if __has_cupy__:
         """
         stresses = s11, s22, s33, s23, s13, s12
         all_device = _are_all_cupy_device_arrays(stresses)
-        
+
         if not all_device:
             s11, s22, s33, s23, s13, s12 = tuple(
                 map(lambda s: cp.asarray(s), (s11, s22, s33, s23, s13, s12))
             )
-        
+
         cupy_array = cp.sqrt(
             0.5 * ((s11 - s22) ** 2 + (s22 - s33) ** 2 + (s33 - s11) ** 2)
-            + 3 * (s12**2 + s13**2 + s23**2)
+            + 3 * (s12 ** 2 + s13 ** 2 + s23 ** 2)
         )
-        
+
         if not all_device:
             return cp.asnumpy(cupy_array)
         else:

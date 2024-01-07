@@ -22,6 +22,7 @@ class KirchhoffPlateLayer(MindlinPlateLayer):
     """
     A class for layers of a Kirchhoff-Love plate.
     """
+
     ...
 
 
@@ -121,4 +122,6 @@ class KirchhoffPlateSection(MindlinShellSection):
             stresses[:, :3] = (self.ABDS @ strains[:, :3].T).T
             stresses[:, 3:] = shear_forces
 
-        return super()._postprocess_standard_form(strains=strains, stresses=stresses, **kwargs)
+        return super()._postprocess_standard_form(
+            strains=strains, stresses=stresses, **kwargs
+        )

@@ -81,8 +81,8 @@ class MindlinShellLayer(SurfaceLayer):
         tmin = self._tmin
         tmax = self._tmax
         A = C[:3, :3] * (tmax - tmin)
-        B = (1 / 2) * C[:3, :3] * (tmax**2 - tmin**2)
-        D = (1 / 3) * C[:3, :3] * (tmax**3 - tmin**3)
+        B = (1 / 2) * C[:3, :3] * (tmax ** 2 - tmin ** 2)
+        D = (1 / 3) * C[:3, :3] * (tmax ** 3 - tmin ** 3)
         S = C[3:, 3:] * (tmax - tmin)
         ABDS = np.zeros([8, 8], dtype=float)
         ABDS[0:3, 0:3] = A
@@ -97,7 +97,7 @@ class MindlinShellLayer(SurfaceLayer):
         Prepares data for continuous interpolation of shear factors. Should
         be called if shear factors are already set.
         """
-        coeff_inv = inv(np.array([[1, z, z**2] for z in self._zi]))
+        coeff_inv = inv(np.array([[1, z, z ** 2] for z in self._zi]))
         self._sfx = np.matmul(coeff_inv, self._shear_factors_x)
         self._sfy = np.matmul(coeff_inv, self._shear_factors_y)
 
@@ -119,9 +119,9 @@ class MindlinShellLayer(SurfaceLayer):
         the thickness.
         """
         z0, z1, z2 = self._zi
-        z = np.array([[1, z0, z0**2], [1, z1, z1**2], [1, z2, z2**2]])
+        z = np.array([[1, z0, z0 ** 2], [1, z1, z1 ** 2], [1, z2, z2 ** 2]])
         a, b, c = inv(z) @ np.array(data)
-        return lambda z: a + b * z + c * z**2
+        return lambda z: a + b * z + c * z ** 2
 
     def stresses(
         self,
@@ -242,8 +242,8 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         alpha_y = ABDS_inv[1, 4]
         beta_y = ABDS_inv[4, 4]
 
-        eta_x = 1 / (A11 * D11 - B11**2)
-        eta_y = 1 / (A22 * D22 - B22**2)
+        eta_x = 1 / (A11 * D11 - B11 ** 2)
+        eta_y = 1 / (A22 * D22 - B22 ** 2)
         alpha_x = -B11 * eta_x
         beta_x = A11 * eta_x
         alpha_y = -B22 * eta_y
@@ -301,8 +301,8 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
             Gyi = C[-1, -1]
             for loc, weight in zip(gP, gW):
                 sfx, sfy = layer._loc_to_shear_factors(loc)
-                pot_p_x += 0.5 * (sfx**2) * dJ * weight / Gxi
-                pot_p_y += 0.5 * (sfy**2) * dJ * weight / Gyi
+                pot_p_x += 0.5 * (sfx ** 2) * dJ * weight / Gxi
+                pot_p_y += 0.5 * (sfy ** 2) * dJ * weight / Gyi
         kx = pot_c_x / pot_p_x
         ky = pot_c_y / pot_p_y
 
@@ -446,7 +446,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
                 for loc in locations:
                     _layers.append(layer)
                     z.append(loc)
-            rng=(-1, 1)
+            rng = (-1, 1)
 
             result = self._postprocess_standard_form(
                 strains=strains,
@@ -523,7 +523,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         z = atleast1d(z)
         bounds = self.bounds
         z = to_range_1d(z, source=rng, target=(bounds[0, 0], bounds[-1, -1]))
-        
+
         # mapping points to layers
         if layers is None:
             layers: Iterable[MindlinShellLayer] = self.find_layers(z)

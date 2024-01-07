@@ -71,7 +71,7 @@ class LinearElasticMaterial:
         *args,
         strains: Optional[Union[ndarray, None]] = None,
         stresses: Optional[Union[ndarray, None]] = None,
-        device:str="cpu",
+        device: str = "cpu",
     ) -> Union[Number, Iterable[Number]]:
         """
         A function that returns a positive number. If the value is 1.0, it means that the material
@@ -96,9 +96,9 @@ class LinearElasticMaterial:
         Number or Iterable[Number]
             A single utilization value as a float or several as a 1d array.
         """
-        #strains = self._input_as_dense_bulk_ndarray(strains)
-        #stresses = self._input_as_dense_bulk_ndarray(stresses)
-        
+        # strains = self._input_as_dense_bulk_ndarray(strains)
+        # stresses = self._input_as_dense_bulk_ndarray(stresses)
+
         if strains is None:
             assert stresses is not None, "Either strains or stresses must be provided"
             _stresses = self._input_as_dense_bulk_ndarray(stresses)
@@ -111,8 +111,10 @@ class LinearElasticMaterial:
 
         if stresses is None:
             stresses = self.calculate_stresses(strains=strains)
-            
-        return self.failure_model.utilization(*args, strains=strains, stresses=stresses, device=device)
+
+        return self.failure_model.utilization(
+            *args, strains=strains, stresses=stresses, device=device
+        )
 
     def calculate_stresses(self, *, strains: ndarray) -> ndarray:
         """
@@ -120,7 +122,7 @@ class LinearElasticMaterial:
         depending on the shape of the input array. Stresses are expected in the order
 
             xx, yy, zz, yz, xz, xy
-            
+
         """
         strains = self._input_as_dense_bulk_ndarray(strains)
         return self.stiffness.calculate_stresses(strains)
@@ -131,12 +133,12 @@ class LinearElasticMaterial:
         depending on the shape of the input array. Strains are expected in the order
 
             xx, yy, zz, yz, xz, xy
-            
+
         """
         stresses = self._input_as_dense_bulk_ndarray(stresses)
         return self.stiffness.calculate_strains(stresses)
-    
-    def _input_as_dense_bulk_ndarray(self, input:Union[ndarray, tuple, None]):
+
+    def _input_as_dense_bulk_ndarray(self, input: Union[ndarray, tuple, None]):
         if input is None:
             return None
         elif isinstance(input, ndarray):

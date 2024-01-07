@@ -23,7 +23,7 @@ class ElasticityTensor(Tensor4):
         The maximum stress the material can sustain without experiencing
         relevant losses in performance. Default is `np.Infinity`.
     """
-    
+
     number_of_stress_components = 6
 
     def __init__(self, *args, yield_strength: Optional[Number] = np.Infinity, **kwargs):

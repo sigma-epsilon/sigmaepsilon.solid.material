@@ -16,6 +16,7 @@ class KirchhoffShellLayer(MindlinShellLayer):
     """
     A class for layers of a Kirchhoff-Love shells.
     """
+
     ...
 
 
@@ -98,4 +99,6 @@ class KirchhoffShellSection(MindlinShellSection):
             stresses[:, :6] = (self.ABDS @ strains[:, :6].T).T
             stresses[:, 6:] = shear_forces
 
-        return super()._postprocess_standard_form(strains=strains, stresses=stresses, **kwargs)
+        return super()._postprocess_standard_form(
+            strains=strains, stresses=stresses, **kwargs
+        )

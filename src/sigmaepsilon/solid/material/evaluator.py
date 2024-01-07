@@ -34,7 +34,7 @@ class FunctionEvaluator(Callable):
         Returns `True` if the function accepts inputs in 'bulk' mode.
         """
         return self._bulk
-    
+
     @property
     def is_cuda(self) -> bool:
         """

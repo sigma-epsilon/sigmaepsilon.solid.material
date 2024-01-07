@@ -29,14 +29,14 @@ class StiffnessLike(Protocol):
         the known laws of solid mechanics.
         """
         ...
-        
+
     def calculate_stresses(self, strains: ndarray) -> ndarray:
         """
         A function that returns stresses for strains as either an 1d or a 2d NumPy array,
         depending on the shape of the input array.
         """
         ...
-        
+
     def calculate_strains(self, stresses: ndarray) -> ndarray:
         """
         A function that returns strains for stresses as either an 1d or a 2d NumPy array,

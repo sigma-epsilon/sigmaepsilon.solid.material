@@ -26,16 +26,18 @@ class MaterialModelType(Enum):
         elif self == MaterialModelType.UNDEFINED:
             return None
         else:  # pragma: no cover
-            raise NotImplementedError((
-                f"This is not implemented for model type {self}. "
-                "Raise an issue if this is important to you or get involved "
-                "and make a pull request yourself."
-            ))
-            
+            raise NotImplementedError(
+                (
+                    f"This is not implemented for model type {self}. "
+                    "Raise an issue if this is important to you or get involved "
+                    "and make a pull request yourself."
+                )
+            )
+
     @property
     def number_of_material_stress_components(self) -> int:
         return self.number_of_material_stress_variables
-    
+
     @property
     def number_of_stress_variables(self) -> int:
         if self == MaterialModelType.DEFAULT:
@@ -55,12 +57,14 @@ class MaterialModelType(Enum):
         elif self == MaterialModelType.UNDEFINED:
             return None
         else:  # pragma: no cover
-            raise NotImplementedError((
-                f"This is not implemented for model type {self}. "
-                "Raise an issue if this is important to you or get involved "
-                "and make a pull request yourself."
-            ))
-            
+            raise NotImplementedError(
+                (
+                    f"This is not implemented for model type {self}. "
+                    "Raise an issue if this is important to you or get involved "
+                    "and make a pull request yourself."
+                )
+            )
+
     @property
     def number_of_stress_components(self) -> int:
         return self.number_of_stress_variables
