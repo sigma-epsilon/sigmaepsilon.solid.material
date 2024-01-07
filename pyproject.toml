@@ -27,10 +27,7 @@ maintainers = [
     { name = "SigmaEpsilon", email = "bencebalogh@sigmaepsilon.com" }
 ]
 license = { file = "LICENSE" }
-keywords = [
-    "engineering", "fea", "fem", "finite element method", "mechanics", 
-    "solid mechanics"
-]
+keywords = ["engineering", "mechanics", "solid mechanics"]
 requires-python = ">=3.8, <3.11"
 dynamic = ["dependencies", "optional-dependencies"]
 
