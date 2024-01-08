@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sigmaepsilon.solid.material"
-version = "0.0.1a"
+version = "0.0.2a"
 description = "Material models for solid structures."
 classifiers=[
         "Development Status :: 3 - Alpha",
