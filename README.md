@@ -25,6 +25,7 @@ Kirchhoff-Love shells, Timoshenko-Ehrenfest and Euler-Bernoulli beams, 3d bodies
 * Fitting of failure models to observed data.
 * NumPy-compilant data classes to handle stiffness, strains and stresses.
 * Fast and efficient code with GPU support.
+* Tight integration with popular Python libraries such as NumPy, SciPy, xarray, etc.
 
 ## Documentation
 
