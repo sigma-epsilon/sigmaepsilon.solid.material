@@ -31,6 +31,7 @@ jobs:
           name: Run tests
           # This assumes pytest is installed via the install-package step above
           command: python -m pytest
+          no_output_timeout: 20m
 
   test_pypi_publish:
     docker:
@@ -84,6 +85,7 @@ jobs:
           command: |
             chmod +x ./run_pytest_cov.sh
             ./run_pytest_cov.sh
+          no_output_timeout: 20m
       - run:
           name: List working directory contents
           command: ls -al
