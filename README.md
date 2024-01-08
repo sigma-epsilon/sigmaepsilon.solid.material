@@ -19,8 +19,7 @@ It is part of the `sigmaepsilon.solid` namespace, a set of namespace pacakes ded
 ### Highlights
 
 * Classes to handle linear elastic materials of all kinds.
-* Elastic stiffness calculations for all kinds of models like Uflyand-Mindlin shells, 
-Kirchhoff-Love shells, Timoshenko-Ehrenfest and Euler-Bernoulli beams, 3d bodies, etc.
+* Elastic stiffness calculations for all kinds of models like Uflyand-Mindlin shells, Kirchhoff-Love shells, Timoshenko-Ehrenfest and Euler-Bernoulli beams, 3d bodies, etc.
 * Utilization calculations.
 * Fitting of failure models to observed data.
 * NumPy-compilant data classes to handle stiffness, strains and stresses.
@@ -57,10 +56,7 @@ If you want to run the tests, you can install the package along with the necessa
 >>> pip install ".[test]"
 ```
 
-If want to execute on the GPU, you need to manually install the necessary requirements. 
-Numba is a direct dependency, so even in this case you have to care about having the prover
-version of the cuda toolkit installed. For this, you need to know the version of the cuda
-compute engine, which depends on the version of GPU card you are having.
+If want to execute on the GPU, you need to manually install the necessary requirements. Numba is a direct dependency, so even in this case you have to care about having the prover version of the cuda toolkit installed. For this, you need to know the version of the cuda compute engine, which depends on the version of GPU card you are having.
 
 ### Development mode
 
