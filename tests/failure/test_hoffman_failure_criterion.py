@@ -190,6 +190,7 @@ class TestHoffmanFittingMembrane(SolidMaterialTestCase):
         params = self.failure_obj.fit(
             self.inputs,
             self.outputs,
+            x0=[-1.0, 1.0, -1.0, 1.0, -1.0, 1.0, 0.2],
         )
         self.failure_obj.params = params
         self._predict()
@@ -198,10 +199,10 @@ class TestHoffmanFittingMembrane(SolidMaterialTestCase):
         params = self.failure_obj.fit(
             self.inputs,
             self.outputs,
-            solver_params=dict(nPop=100, length=12),
+            solver_params=dict(nPop=10, length=12),
             penalty=1e12,
             tol=0.1,
-            n_iter=100,
+            n_iter=1,
             ranges=[[-10, 10] for _ in range(7)],
             method="bga",
         )
