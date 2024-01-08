@@ -332,7 +332,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         *args,
         squeeze: Optional[bool] = True,
         **kwargs,
-    ) -> ndarray:
+    ) -> xr.DataArray:
         """
         Calculates material stresses for input internal forces or strains
         and returns it as a NumPy array.
@@ -390,7 +390,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         *args,
         squeeze: Optional[bool] = True,
         **kwargs,
-        ) -> Union[Number, Iterable[Number]]:
+        ) -> xr.DataArray:
         """
         A function that returns a positive number. If the value is 1.0, it means that the material
         is at peak performance and any further increase in the loads is very likely to lead to failure

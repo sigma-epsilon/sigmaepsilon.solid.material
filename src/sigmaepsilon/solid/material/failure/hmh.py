@@ -2,6 +2,7 @@ from typing import Optional, Tuple, Union, ClassVar, Iterable, MutableMapping
 from collections import defaultdict
 from numbers import Number
 
+from xarray import DataArray
 import numpy as np
 from numpy import ndarray, ascontiguousarray as ascont
 
@@ -218,6 +219,9 @@ class HuberMisesHenckyFailureCriterion(AbstractFailureCriterion):
             num_component = stresses.shape[-1]
         elif isinstance(stresses, tuple):
             num_component = len(stresses)
+        elif isinstance(stresses, DataArray):
+            stresses = atleast2d(stresses.values)
+            num_component = stresses.shape[-1]
         else:
             stress_type = type(stresses)
             raise TypeError(

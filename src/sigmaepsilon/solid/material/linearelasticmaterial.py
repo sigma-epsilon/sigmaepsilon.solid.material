@@ -3,6 +3,7 @@ from numbers import Number
 
 from numpy import ndarray
 import numpy as np
+import xarray as xr
 
 from sigmaepsilon.math import atleastnd
 
@@ -72,7 +73,7 @@ class LinearElasticMaterial:
         strains: Optional[Union[ndarray, None]] = None,
         stresses: Optional[Union[ndarray, None]] = None,
         device: str = "cpu",
-    ) -> Union[Number, Iterable[Number]]:
+    ) -> xr.DataArray:
         """
         A function that returns a positive number. If the value is 1.0, it means that the material
         is at peak performance and any further increase in the loads is very likely to lead to failure
@@ -112,11 +113,18 @@ class LinearElasticMaterial:
         if stresses is None:
             stresses = self.calculate_stresses(strains=strains)
 
-        return self.failure_model.utilization(
+        results_np = self.failure_model.utilization(
             *args, strains=strains, stresses=stresses, device=device
         )
-
-    def calculate_stresses(self, *, strains: ndarray) -> ndarray:
+        if len(results_np.shape) > 0:
+            num_data = len(results_np)
+            coords = [np.arange(num_data)]
+            results_xr = xr.DataArray(results_np, coords=coords, dims=["index"])
+            return results_xr
+        else:
+            return xr.DataArray(results_np)
+        
+    def calculate_stresses(self, *, strains: ndarray) -> xr.DataArray:
         """
         A function that returns stresses for strains as either an 1d or a 2d NumPy array,
         depending on the shape of the input array. Stresses are expected in the order
@@ -125,9 +133,15 @@ class LinearElasticMaterial:
 
         """
         strains = self._input_as_dense_bulk_ndarray(strains)
-        return self.stiffness.calculate_stresses(strains)
-
-    def calculate_strains(self, *, stresses: ndarray) -> ndarray:
+        results_np = self.stiffness.calculate_stresses(strains)
+        num_data = results_np.shape[0]
+        components = ["SXX", "SYY", "SZZ", "SYZ", "SXZ", "SXY"]
+        coords = [np.arange(num_data), components]
+        dims = ["index", "component"]
+        results_xr = xr.DataArray(results_np, coords=coords, dims=dims)
+        return results_xr
+        
+    def calculate_strains(self, *, stresses: ndarray) -> xr.DataArray:
         """
         A function that returns strains for stresses as either an 1d or a 2d NumPy array,
         depending on the shape of the input array. Strains are expected in the order
@@ -136,7 +150,13 @@ class LinearElasticMaterial:
 
         """
         stresses = self._input_as_dense_bulk_ndarray(stresses)
-        return self.stiffness.calculate_strains(stresses)
+        results_np = self.stiffness.calculate_strains(stresses)
+        num_data = results_np.shape[0]
+        components = ["EXX", "EYY", "EZZ", "EYZ", "EXZ", "EXY"]
+        coords = [np.arange(num_data), components]
+        dims = ["index", "component"]
+        results_xr = xr.DataArray(results_np, coords=coords, dims=dims)
+        return results_xr
 
     def _input_as_dense_bulk_ndarray(self, input: Union[ndarray, tuple, None]):
         if input is None:
@@ -145,4 +165,8 @@ class LinearElasticMaterial:
             result = input
         elif isinstance(input, tuple):
             result = np.stack(input, axis=1)
+        elif isinstance(input, xr.DataArray):
+            result = input.values
+        else:
+            result = input
         return atleastnd(result, 2, front=True)
