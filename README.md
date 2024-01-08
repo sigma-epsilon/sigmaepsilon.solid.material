@@ -84,7 +84,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 The following command runs all tests and creates a html report in a folder named `htmlcov` (the settings are governed by the `.coveragerc` file):
 
 ```console
-python -m pytest --cov-report html --cov-config=.coveragerc --cov sigmaepsilon.mesh
+python -m pytest --cov-report html --cov-config=.coveragerc --cov sigmaepsilon.solid.material
 ```
 
 Open `htmlcov/index.html` to see the results.
