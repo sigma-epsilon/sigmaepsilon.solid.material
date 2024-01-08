@@ -122,6 +122,11 @@ class MembraneSection(MindlinShellSection):
     model_type = MaterialModelType.MEMBRANE
     failure_class: FailureLike = HuberMisesHenckyFailureCriterion_M
     number_of_stress_components: int = 3
+    material_stress_components = [
+        "SXX",
+        "SYY",
+        "SXY",
+    ]
 
     def __init__(self, *args, assume_regular: bool = False, **kwargs):
         self._assume_regular = assume_regular

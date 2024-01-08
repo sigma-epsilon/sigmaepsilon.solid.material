@@ -4,6 +4,7 @@ from numbers import Number
 from numpy import ndarray
 import numpy as np
 from numpy.linalg import inv
+import xarray as xr
 
 from sigmaepsilon.math import atleastnd, atleast1d, atleast2d
 from sigmaepsilon.math import to_range_1d
@@ -81,8 +82,8 @@ class MindlinShellLayer(SurfaceLayer):
         tmin = self._tmin
         tmax = self._tmax
         A = C[:3, :3] * (tmax - tmin)
-        B = (1 / 2) * C[:3, :3] * (tmax ** 2 - tmin ** 2)
-        D = (1 / 3) * C[:3, :3] * (tmax ** 3 - tmin ** 3)
+        B = (1 / 2) * C[:3, :3] * (tmax**2 - tmin**2)
+        D = (1 / 3) * C[:3, :3] * (tmax**3 - tmin**3)
         S = C[3:, 3:] * (tmax - tmin)
         ABDS = np.zeros([8, 8], dtype=float)
         ABDS[0:3, 0:3] = A
@@ -97,7 +98,7 @@ class MindlinShellLayer(SurfaceLayer):
         Prepares data for continuous interpolation of shear factors. Should
         be called if shear factors are already set.
         """
-        coeff_inv = inv(np.array([[1, z, z ** 2] for z in self._zi]))
+        coeff_inv = inv(np.array([[1, z, z**2] for z in self._zi]))
         self._sfx = np.matmul(coeff_inv, self._shear_factors_x)
         self._sfy = np.matmul(coeff_inv, self._shear_factors_y)
 
@@ -119,9 +120,9 @@ class MindlinShellLayer(SurfaceLayer):
         the thickness.
         """
         z0, z1, z2 = self._zi
-        z = np.array([[1, z0, z0 ** 2], [1, z1, z1 ** 2], [1, z2, z2 ** 2]])
+        z = np.array([[1, z0, z0**2], [1, z1, z1**2], [1, z2, z2**2]])
         a, b, c = inv(z) @ np.array(data)
-        return lambda z: a + b * z + c * z ** 2
+        return lambda z: a + b * z + c * z**2
 
     def stresses(
         self,
@@ -199,6 +200,8 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
     number_of_material_stress_components: int = 5
     number_of_stress_components: int = 8
 
+    material_stress_components = ["SXX", "SYY", "SXY", "SXZ", "SYZ"]
+
     @classmethod
     def Material(cls, **kwargs) -> LinearElasticMaterial:
         """
@@ -242,8 +245,8 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         alpha_y = ABDS_inv[1, 4]
         beta_y = ABDS_inv[4, 4]
 
-        eta_x = 1 / (A11 * D11 - B11 ** 2)
-        eta_y = 1 / (A22 * D22 - B22 ** 2)
+        eta_x = 1 / (A11 * D11 - B11**2)
+        eta_y = 1 / (A22 * D22 - B22**2)
         alpha_x = -B11 * eta_x
         beta_x = A11 * eta_x
         alpha_y = -B22 * eta_y
@@ -301,8 +304,8 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
             Gyi = C[-1, -1]
             for loc, weight in zip(gP, gW):
                 sfx, sfy = layer._loc_to_shear_factors(loc)
-                pot_p_x += 0.5 * (sfx ** 2) * dJ * weight / Gxi
-                pot_p_y += 0.5 * (sfy ** 2) * dJ * weight / Gyi
+                pot_p_x += 0.5 * (sfx**2) * dJ * weight / Gxi
+                pot_p_y += 0.5 * (sfy**2) * dJ * weight / Gyi
         kx = pot_c_x / pot_p_x
         ky = pot_c_y / pot_p_y
 
@@ -324,7 +327,12 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         self._SDBA = np.linalg.inv(self._ABDS)
         return self._ABDS
 
-    def calculate_stresses(self, *args, **kwargs) -> ndarray:
+    def calculate_stresses(
+        self,
+        *args,
+        squeeze: Optional[bool] = True,
+        **kwargs,
+    ) -> xr.DataArray:
         """
         Calculates material stresses for input internal forces or strains
         and returns it as a NumPy array.
@@ -349,9 +357,40 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         ppl: int, Optional
             Point per layer. Default is None.
         """
-        return self._postprocess(*args, mode="stress", **kwargs)
+        # return self._postprocess(*args, mode="stress", z=z, **kwargs)
+        result = None
+        result_np = self._postprocess(
+            *args, mode="stress", squeeze=False, **kwargs
+        )
+        if len(result_np.shape) == 3:
+            num_data, num_z, num_compoennt = result_np.shape
+            components = self.__class__.material_stress_components
+            assert num_compoennt == len(components)
+            points = np.arange(num_data)
+            points_z = np.arange(num_z)
+            coords = [points, points_z, components]
+            dims = ["index", "point", "component"]
+            result_xr = xr.DataArray(result_np, coords=coords, dims=dims)
+            result = result_xr
+        elif len(result_np.shape) == 4:
+            num_data, num_layers, num_point_per_layer, num_compoennt = result_np.shape
+            components = self.__class__.material_stress_components
+            assert num_compoennt == len(components)
+            points = np.arange(num_data)
+            layers = np.arange(num_layers)
+            layerpoints = np.arange(num_point_per_layer)
+            coords = [points, layers, layerpoints, components]
+            dims = ["index", "layer", "point", "component"]
+            result_xr = xr.DataArray(result_np, coords=coords, dims=dims)
+            result = result_xr
+        return result if not squeeze else np.squeeze(result)
 
-    def utilization(self, *args, **kwargs) -> Union[Number, Iterable[Number]]:
+    def utilization(
+        self,
+        *args,
+        squeeze: Optional[bool] = True,
+        **kwargs,
+        ) -> xr.DataArray:
         """
         A function that returns a positive number. If the value is 1.0, it means that the material
         is at peak performance and any further increase in the loads is very likely to lead to failure
@@ -386,7 +425,18 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         This shows in the shapes of output arrays and you will quickly find the logic behind it
         with minimal experimentation.
         """
-        return self._postprocess(*args, mode="u", **kwargs)
+        result = None
+        result_np = self._postprocess(*args, mode="u", squeeze=False, **kwargs)
+        if len(result_np.shape) == 2:
+            coords = [np.arange(len(result_np)), np.arange(result_np.shape[1])]
+            dims = ["index", "point"]
+            result = xr.DataArray(result_np, coords=coords, dims=dims)
+        elif len(result_np.shape) == 3:
+            num_data, num_layers, num_point_per_layer = result_np.shape
+            coords = [np.arange(num_data), np.arange(num_layers), np.arange(num_point_per_layer)]
+            dims = ["index", "layer", "point"]
+            result = xr.DataArray(result_np, coords=coords, dims=dims)
+        return result if not squeeze else np.squeeze(result)
 
     def _postprocess(
         self,
