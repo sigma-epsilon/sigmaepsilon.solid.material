@@ -5,7 +5,7 @@
 [![Documentation Status](https://readthedocs.org/projects/sigmaepsilonsolidmaterial/badge/?version=latest)](https://sigmaepsilonsolidmaterial.readthedocs.io/en/latest/?badge=latest)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PyPI](https://badge.fury.io/py/sigmaepsilon.solid.material.svg)](https://pypi.org/project/sigmaepsilon.solid.material)
-[![Python 3.8‒3.10](https://img.shields.io/badge/python-3.7%E2%80%923.10-blue)](https://www.python.org)
+[![Python](https://img.shields.io/badge/python-3.10%E2%80%923.11-blue)](https://www.python.org)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Requirements Status](https://dependency-dash.repo-helper.uk/github/sigma-epsilon/sigmaepsilon.solid.material/badge.svg)](https://dependency-dash.repo-helper.uk/github/sigma-epsilon/sigmaepsilon.solid.material)
 
@@ -32,7 +32,7 @@ The [documentation](https://sigmaepsilonsolidmaterial.readthedocs.io/en/latest/)
 
 ## Installation
 
-sigmaepsilon.solid.material can be installed from PyPI using `pip` on Python >= 3.8:
+sigmaepsilon.solid.material can be installed from PyPI using `pip` on Python >= 3.10:
 
 ```console
 >>> pip install sigmaepsilon.solid.material
@@ -76,7 +76,7 @@ Python 3.10.2 (tags/v3.10.2:3d8993a, May  3 2023, 11:48:03) [MSC v.1928 64 bit (
 Type "help", "copyright", "credits" or "license" for more information.
 >>> import sigmaepsilon.solid.material
 >>> sigmaepsilon.solid.material.__version__
-'0.0.1a'
+'1.0.0'
 ```
 
 ## Testing and coverage

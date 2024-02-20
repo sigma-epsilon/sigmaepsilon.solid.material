@@ -38,9 +38,9 @@ class HoffmanFailureCriterion(AbstractFailureCriterion):
     Instances are callable and can handle arguments in many shapes.
     """
 
-    model_type: ClassVar[
-        Union[MaterialModelType, Iterable[MaterialModelType]]
-    ] = MaterialModelType.DEFAULT
+    model_type: ClassVar[Union[MaterialModelType, Iterable[MaterialModelType]]] = (
+        MaterialModelType.DEFAULT
+    )
 
     principal_model_params: ClassVar[List[int]] = [
         "Xc",

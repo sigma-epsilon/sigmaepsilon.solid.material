@@ -37,16 +37,16 @@ def Hoffman_failure_criterion_principal_form(
         - s11 * s22 / (Zc * Zt)
         + s11 * s33 / (Zc * Zt)
         + s22 * s33 / (Zc * Zt)
-        - s33 ** 2 / (Zc * Zt)
+        - s33**2 / (Zc * Zt)
         + s22 / Yt
         + s22 / Yc
         + s11 * s22 / (Yc * Yt)
         - s11 * s33 / (Yc * Yt)
-        - s22 ** 2 / (Yc * Yt)
+        - s22**2 / (Yc * Yt)
         + s22 * s33 / (Yc * Yt)
         + s11 / Xt
         + s11 / Xc
-        - s11 ** 2 / (Xc * Xt)
+        - s11**2 / (Xc * Xt)
         + s11 * s22 / (Xc * Xt)
         + s11 * s33 / (Xc * Xt)
         - s22 * s33 / (Xc * Xt)
@@ -70,10 +70,10 @@ def Hoffman_failure_criterion_principal_form_PS(
         + s22 / Yt
         + s22 / Yc
         + s11 * s22 / (Yc * Yt)
-        - s22 ** 2 / (Yc * Yt)
+        - s22**2 / (Yc * Yt)
         + s11 / Xt
         + s11 / Xc
-        - s11 ** 2 / (Xc * Xt)
+        - s11**2 / (Xc * Xt)
         + s11 * s22 / (Xc * Xt)
         + s23 / S23
         + s13 / S13
@@ -93,10 +93,10 @@ def Hoffman_failure_criterion_principal_form_M(
         + s22 / Yt
         + s22 / Yc
         + s11 * s22 / (Yc * Yt)
-        - s22 ** 2 / (Yc * Yt)
+        - s22**2 / (Yc * Yt)
         + s11 / Xt
         + s11 / Xc
-        - s11 ** 2 / (Xc * Xt)
+        - s11**2 / (Xc * Xt)
         + s11 * s22 / (Xc * Xt)
         + s12 / S12
     )

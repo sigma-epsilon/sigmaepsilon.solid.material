@@ -19,9 +19,9 @@ class LinearElasticMaterial:
     a stiffness provider and optionally an implementation of a failure model.
     """
 
-    model_type: ClassVar[
-        Union[MaterialModelType, Iterable[MaterialModelType]]
-    ] = MaterialModelType.DEFAULT
+    model_type: ClassVar[Union[MaterialModelType, Iterable[MaterialModelType]]] = (
+        MaterialModelType.DEFAULT
+    )
 
     def __init__(
         self,
@@ -123,7 +123,7 @@ class LinearElasticMaterial:
             return results_xr
         else:
             return xr.DataArray(results_np)
-        
+
     def calculate_stresses(self, *, strains: ndarray) -> xr.DataArray:
         """
         A function that returns stresses for strains as either an 1d or a 2d NumPy array,
@@ -140,7 +140,7 @@ class LinearElasticMaterial:
         dims = ["index", "component"]
         results_xr = xr.DataArray(results_np, coords=coords, dims=dims)
         return results_xr
-        
+
     def calculate_strains(self, *, stresses: ndarray) -> xr.DataArray:
         """
         A function that returns strains for stresses as either an 1d or a 2d NumPy array,
