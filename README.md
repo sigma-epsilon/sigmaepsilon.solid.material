@@ -32,7 +32,7 @@ The [documentation](https://sigmaepsilonsolidmaterial.readthedocs.io/en/latest/)
 
 ## Installation
 
-sigmaepsilon.solid.material can be installed from PyPI using `pip` on Python >= 3.8:
+sigmaepsilon.solid.material can be installed from PyPI using `pip` on Python >= 3.10:
 
 ```console
 >>> pip install sigmaepsilon.solid.material
