@@ -9,6 +9,9 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Requirements Status](https://dependency-dash.repo-helper.uk/github/sigma-epsilon/sigmaepsilon.solid.material/badge.svg)](https://dependency-dash.repo-helper.uk/github/sigma-epsilon/sigmaepsilon.solid.material)
 
+> **Note**
+> Here and there, implementation of the performance critical parts of the library rely on the JIT-compilation capabilities of Numba. This means that the library performs well even for large scale problems, on the expense of a longer first call.
+
 ## What is sigmaepsilon.solid.material?
 
 It is part of the `sigmaepsilon.solid` namespace, a set of namespace pacakes dedicated to different areas of solid mechanics. In this namespace, `sigmaepsilon.solid.material` is responsible for calculations related to mechanical investingations of solid materials. Similar to `sectionproperties`, but we are extending the possibilities by supporting similar functionality for membranes, plates, shells and 3d solids as well, for general anisotropy and utilization with a customizable failure mechanism. For 1d members we rely on `sectionproperties`.
