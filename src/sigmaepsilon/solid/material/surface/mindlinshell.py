@@ -359,7 +359,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         """
         # return self._postprocess(*args, mode="stress", z=z, **kwargs)
         result = None
-        result_np = self._postprocess(
+        result_np, result_coords = self._postprocess(
             *args, mode="stress", squeeze=False, **kwargs
         )
         if len(result_np.shape) == 3:
@@ -383,7 +383,8 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
             dims = ["index", "layer", "point", "component"]
             result_xr = xr.DataArray(result_np, coords=coords, dims=dims)
             result = result_xr
-        return result if not squeeze else np.squeeze(result)
+        result = result if not squeeze else np.squeeze(result)
+        return result if result_coords is None else (result, result_coords)
 
     def utilization(
         self,
@@ -426,7 +427,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         with minimal experimentation.
         """
         result = None
-        result_np = self._postprocess(*args, mode="u", squeeze=False, **kwargs)
+        result_np, result_coords = self._postprocess(*args, mode="u", squeeze=False, **kwargs)
         if len(result_np.shape) == 2:
             coords = [np.arange(len(result_np)), np.arange(result_np.shape[1])]
             dims = ["index", "point"]
@@ -436,7 +437,8 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
             coords = [np.arange(num_data), np.arange(num_layers), np.arange(num_point_per_layer)]
             dims = ["index", "layer", "point"]
             result = xr.DataArray(result_np, coords=coords, dims=dims)
-        return result if not squeeze else np.squeeze(result)
+        result = result if not squeeze else np.squeeze(result)
+        return result if result_coords is None else (result, result_coords)
 
     def _postprocess(
         self,
@@ -498,7 +500,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
                     z.append(loc)
             rng = (-1, 1)
 
-            result = self._postprocess_standard_form(
+            result, coords = self._postprocess_standard_form(
                 strains=strains,
                 stresses=stresses,
                 z=z,
@@ -519,7 +521,9 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
                     num_data, num_layers, num_point_per_layer, num_X
                 )
 
-            return np.squeeze(result) if squeeze else result
+            result = np.squeeze(result) if squeeze else result
+
+            return result, coords
         else:
             return self._postprocess_standard_form(
                 strains=strains,
@@ -541,6 +545,8 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         squeeze: Optional[bool] = True,
         mode: Optional[str] = "stress",
         layers: Optional[Union[Iterable[MindlinShellLayer], None]] = None,
+        return_coords: Optional[bool] = False,
+        coords: Optional[Union[ndarray, None]] = None,
         **__,
     ) -> Union[Number, Iterable[Number]]:
         """
@@ -584,6 +590,14 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
 
         assert all([layer is not None for layer in layers])
 
+        has_coords = False
+        if return_coords:
+            if coords is None:
+                result_coords = np.zeros((num_data, num_z), dtype=float)
+            else:
+                has_coords = True
+                result_coords = np.zeros((num_data, num_z, 3), dtype=float)
+        
         if return_stresses:
             result = np.zeros((num_data, num_z, num_component), dtype=float)
         else:
@@ -591,9 +605,16 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
 
         material_stresses = np.zeros((num_data, num_component), dtype=float)
         for iz, layer in enumerate(layers):
+            if return_coords and has_coords:
+                result_coords[:, iz, :2] = coords[:, :2]
+                result_coords[:, iz, -1] = z[iz]
+            elif return_coords:
+                result_coords[:, iz] = z[iz]
+                
             layer.stresses(
                 strains=strains, stresses=stresses, z=z[iz], out=material_stresses
             )
+            
             if return_stresses:
                 result[:, iz, :] = material_stresses
             elif return_utilization:
@@ -601,4 +622,10 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
                     stresses=material_stresses, squeeze=False
                 )
 
-        return np.squeeze(result) if squeeze else result
+        result = np.squeeze(result) if squeeze else result
+
+        if return_coords:
+            return result, result_coords
+        else:
+            return result, None
+        

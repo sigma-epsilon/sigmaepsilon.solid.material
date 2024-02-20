@@ -17,7 +17,7 @@ from .mindlin import (
 __cache = True
 
 
-# @njit(nogil=True, parallel=True, cache=__cache)
+@njit(nogil=True, parallel=True, cache=__cache)
 def _pproc_Mindlin_3D(
     ABDS: np.ndarray,
     sfx: np.ndarray,
