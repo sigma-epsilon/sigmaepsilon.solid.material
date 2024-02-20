@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 name = "sigmaepsilon.solid.material"
 version = "1.0.0"
-description = "Material models for solid structures."
+description = "Material models for solid structures in Python."
 classifiers=[
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: MIT License",
@@ -18,7 +18,11 @@ readme = "README.md"
 authors = ["Bence Balogh <bencebalogh@sigmaepsilon.com>"]
 maintainers = ["Bence Balogh <bencebalogh@sigmaepsilon.com>"]
 license = "MIT"
-keywords = ["engineering", "mechanics", "solid mechanics"]
+keywords = [
+"engineering", "mechanics", "solid mechanics", "Python",
+"numerical methods", "material models", "material properties",
+"material testing", "material characterization", "material science",
+]
 homepage = "https://github.com/sigma-epsilon/sigmaepsilon.solid.material"
 repository = "https://github.com/sigma-epsilon/sigmaepsilon.solid.material"
 documentation = "https://sigmaepsilonsolidmaterial.readthedocs.io/en/latest/?badge=latest"
@@ -26,13 +30,42 @@ packages = [{ include = "sigmaepsilon", from = "src" }]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
+xarray = "^2024.2.0"
+sigmaepsilon-mesh = ">=2.3.2"
 
 
 [tool.poetry.group.dev.dependencies]
+matplotlib = "^3.8.3"
+texttable = "^1.7.0"
+pandas = "^2.2.0"
+ipykernel = "^6.29.2"
+pyyaml = "^6.0.1"
+black = "^24.2.0"
 
 
 [tool.poetry.group.test.dependencies]
+coverage = "^7.4.1"
+pytest = "^8.0.1"
+pytest-cov = "^4.1.0"
+pyyaml = "^6.0.1"
 
 
 [tool.poetry.group.docs.dependencies]
+ipython = "^8.21.0"
+myst-parser = "^2.0.0"
+nbsphinx = "^0.9.3"
+sphinx-gallery = "^0.15.0"
+sphinx-copybutton = "^0.5.2"
+sphinxcontrib-bibtex = "^2.6.2"
+nbsphinx-link = "^1.3.0"
+sphinxcontrib-svg2pdfconverter = "^1.2.2"
+sphinx-design = "^0.5.0"
+sphinx-inline-tabs = "^2023.4.21"
+pydata-sphinx-theme = "^0.15.2"
+matplotlib = "^3.8.3"
+setuptools = ">=65.5.1"
+numpy = ">=1.22.2"
+pillow = ">=10.0.1"
+tornado = ">=6.3.3"
+fonttools = ">=4.43.0"
 

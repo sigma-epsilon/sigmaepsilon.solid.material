@@ -391,7 +391,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         *args,
         squeeze: Optional[bool] = True,
         **kwargs,
-        ) -> xr.DataArray:
+    ) -> xr.DataArray:
         """
         A function that returns a positive number. If the value is 1.0, it means that the material
         is at peak performance and any further increase in the loads is very likely to lead to failure
@@ -427,14 +427,20 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         with minimal experimentation.
         """
         result = None
-        result_np, result_coords = self._postprocess(*args, mode="u", squeeze=False, **kwargs)
+        result_np, result_coords = self._postprocess(
+            *args, mode="u", squeeze=False, **kwargs
+        )
         if len(result_np.shape) == 2:
             coords = [np.arange(len(result_np)), np.arange(result_np.shape[1])]
             dims = ["index", "point"]
             result = xr.DataArray(result_np, coords=coords, dims=dims)
         elif len(result_np.shape) == 3:
             num_data, num_layers, num_point_per_layer = result_np.shape
-            coords = [np.arange(num_data), np.arange(num_layers), np.arange(num_point_per_layer)]
+            coords = [
+                np.arange(num_data),
+                np.arange(num_layers),
+                np.arange(num_point_per_layer),
+            ]
             dims = ["index", "layer", "point"]
             result = xr.DataArray(result_np, coords=coords, dims=dims)
         result = result if not squeeze else np.squeeze(result)
@@ -597,7 +603,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
             else:
                 has_coords = True
                 result_coords = np.zeros((num_data, num_z, 3), dtype=float)
-        
+
         if return_stresses:
             result = np.zeros((num_data, num_z, num_component), dtype=float)
         else:
@@ -610,11 +616,11 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
                 result_coords[:, iz, -1] = z[iz]
             elif return_coords:
                 result_coords[:, iz] = z[iz]
-                
+
             layer.stresses(
                 strains=strains, stresses=stresses, z=z[iz], out=material_stresses
             )
-            
+
             if return_stresses:
                 result[:, iz, :] = material_stresses
             elif return_utilization:
@@ -628,4 +634,3 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
             return result, result_coords
         else:
             return result, None
-        
