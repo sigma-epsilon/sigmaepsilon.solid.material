@@ -1,11 +1,4 @@
-from typing import (
-    Optional,
-    Union,
-    ClassVar,
-    Iterable,
-    Callable,
-    MutableMapping
-)
+from typing import Optional, Union, ClassVar, Iterable, Callable, MutableMapping
 from abc import abstractproperty, abstractmethod
 
 import numpy as np
@@ -28,13 +21,11 @@ class AbstractFailureCriterion:
     failure_evaluator: ClassVar[Optional[Union[Callable, None]]] = None
 
     @abstractproperty
-    def number_of_strength_parameters(self) -> int:
-        ...
+    def number_of_strength_parameters(self) -> int: ...
 
     @abstractproperty
-    def params(self) -> Iterable[float]:
-        ...
-        
+    def params(self) -> Iterable[float]: ...
+
     @property
     def evaluator(self) -> MutableMapping[str, FunctionEvaluator]:
         """
@@ -44,8 +35,7 @@ class AbstractFailureCriterion:
         ...
 
     @abstractmethod
-    def utilization(self, *args, **kwargs) -> Union[ndarray, float]:
-        ...
+    def utilization(self, *args, **kwargs) -> Union[ndarray, float]: ...
 
     def fit(
         self,

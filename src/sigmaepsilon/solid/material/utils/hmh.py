@@ -121,9 +121,7 @@ def HMH_S(strs: ndarray) -> float:
     1.0
     """
     s11, s22, s12, s13, s23 = strs
-    return np.sqrt(
-        s11**2 - s11 * s22 + s22**2 + 3 * s12**2 + 3 * s13**2 + 3 * s23**2
-    )
+    return np.sqrt(s11**2 - s11 * s22 + s22**2 + 3 * s12**2 + 3 * s13**2 + 3 * s23**2)
 
 
 @vectorize("f8(f8, f8, f8, f8, f8)", target="parallel", cache=__cache)
@@ -142,9 +140,7 @@ def HMH_S_v(s11, s22, s12, s13, s23) -> float:
     >>> HMH_S_v(1.0, 0.0, 0.0, 0.0, 0.0)
     1.0
     """
-    return np.sqrt(
-        s11**2 - s11 * s22 + s22**2 + 3 * s12**2 + 3 * s13**2 + 3 * s23**2
-    )
+    return np.sqrt(s11**2 - s11 * s22 + s22**2 + 3 * s12**2 + 3 * s13**2 + 3 * s23**2)
 
 
 @njit(nogil=True, cache=__cache)
@@ -351,6 +347,7 @@ if __has_numba_cuda__:
         return output
 
 else:
+
     def HMH_3d_v_numba_cuda_kernel(*args, **kwargs):
         raise NotImplementedError(
             (

@@ -1,10 +1,11 @@
-from typing import Union, Optional
+from typing import Union, Optional, Tuple
 from numbers import Number
 import warnings
 
 import numpy as np
 from numpy import ndarray, ascontiguousarray as ascont
-from numpy.linalg import inv
+from numpy.linalg import inv, eigh
+import xarray as xr
 
 from sigmaepsilon.math import atleast2d
 
@@ -13,6 +14,11 @@ from .mindlinshell import MindlinShellSection, MindlinShellLayer
 from ..utils.mindlin import (
     _get_shell_material_stiffness_matrix,
     shell_rotation_matrix,
+)
+from ..utils.principal import (
+    principal_stress_angle_2d,
+    max_principal_stress_2d,
+    min_principal_stress_2d,
 )
 from ..warnings import SigmaEpsilonMaterialWarning
 from ..enums import MaterialModelType
@@ -161,3 +167,102 @@ class MembraneSection(MindlinShellSection):
         self._ABDS = (self._ABDS + self._ABDS.T) / 2
         self._SDBA = np.linalg.inv(self._ABDS)
         return self._ABDS
+
+    def principal_material_stress_angles(self, *args, **kwargs) -> xr.DataArray:
+        """
+        Returns principal material stress angles valuated at given heights
+        from the reference surface. Calling the function is exactly the same as for
+        `calculate_stresses`, see there for the details. Returns an `xarray.DataArray`
+        instance.
+        """
+        stresses = self.calculate_stresses(*args, **kwargs)
+        sxx, syy, sxy = (
+            stresses.sel(component="SXX").values,
+            stresses.sel(component="SYY").values,
+            stresses.sel(component="SXY").values,
+        )
+        theta = principal_stress_angle_2d(sxx, syy, sxy)
+
+        result_np = result = theta
+        if len(result_np.shape) == 3:
+            num_data, num_layers, num_point_per_layer = result_np.shape[:3]
+            coords = [
+                np.arange(num_data),
+                np.arange(num_layers),
+                np.arange(num_point_per_layer),
+            ]
+            dims = ["index", "layer", "point"]
+            result = xr.DataArray(result_np, coords=coords, dims=dims)
+        elif len(result_np.shape) == 2:
+            num_data, num_z = result_np.shape[:2]
+            coords = [np.arange(num_data), np.arange(num_z)]
+            dims = ["index", "point"]
+            result = xr.DataArray(result_np, coords=coords, dims=dims)
+        else:
+            raise NotImplementedError
+        return result
+
+    def principal_material_stresses(self, *args, **kwargs) -> xr.DataArray:
+        """
+        Returns principal material stresses valuated at given heights
+        from the reference surface. Calling the function is exactly the same as for
+        `calculate_stresses`, see there for the details. Returns an `xarray.DataArray`
+        instance.
+        """
+        stresses = self.calculate_stresses(*args, **kwargs)
+        sxx, syy, sxy = (
+            stresses.sel(component="SXX").values,
+            stresses.sel(component="SYY").values,
+            stresses.sel(component="SXY").values,
+        )
+        s_1 = max_principal_stress_2d(sxx, syy, sxy)
+        s_2 = min_principal_stress_2d(sxx, syy, sxy)
+
+        result_np = result = np.stack([s_1, s_2], axis=-1)
+        if len(result_np.shape) == 4:
+            num_data, num_layers, num_point_per_layer = result_np.shape[:3]
+            coords = [
+                np.arange(num_data),
+                np.arange(num_layers),
+                np.arange(num_point_per_layer),
+                ["s1", "s2"],
+            ]
+            dims = ["index", "layer", "point", "component"]
+            result = xr.DataArray(result_np, coords=coords, dims=dims)
+        elif len(result_np.shape) == 3:
+            num_data, num_z = result_np.shape[:2]
+            coords = [np.arange(num_data), np.arange(num_z), ["s1", "s2"]]
+            dims = ["index", "point", "component"]
+            result = xr.DataArray(result_np, coords=coords, dims=dims)
+        else:
+            raise NotImplementedError
+        return result
+
+    def eig(self, *args, z=None, **kwargs) -> Tuple[ndarray]:
+        """
+        Returns values and directions of principal stresses evaluated at given heights
+        from the reference surface. Calling the function is exactly the same as for
+        `calculate_stresses`, see there for the details. Returns the eigenvalues and the
+        eigenvectors as a tuple of NumPy arrays.
+        """
+        if z is None:
+            raise NotImplementedError(
+                (
+                    "This is only for material stresses at the moment, you must specify"
+                    " a distance from the reference surface."
+                )
+            )
+
+        stresses = self.calculate_stresses(*args, z=z, **kwargs)
+        sxx, syy, sxy = (
+            stresses.sel(component="SXX").values,
+            stresses.sel(component="SYY").values,
+            stresses.sel(component="SXY").values,
+        )
+        shape = sxx.shape + (2, 2)
+        stress_matrices = np.zeros(shape, dtype=float)
+        stress_matrices[..., 0, 0] = sxx
+        stress_matrices[..., 1, 1] = syy
+        stress_matrices[..., 0, 1] = sxy
+        stress_matrices[..., 1, 0] = sxy
+        return eigh(stress_matrices)
