@@ -84,7 +84,7 @@ class BernoulliFrameSection(LineSection):
         for i in range(6):
             N, Vy, Vx, Mzz, Mxx, Myy = _strs[i]
             stress_post = self.calculate_stress(
-                N=N, Vy=Vy, Vx=Vx, Mzz=Mzz, Mxx=Mxx, Myy=Myy
+                n=N, vy=Vy, vx=Vx, mzz=Mzz, mxx=Mxx, myy=Myy
             )
             stresses = stress_post.get_stress()
             if not separate:
