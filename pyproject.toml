@@ -33,7 +33,6 @@ python = ">=3.10,<3.12"
 xarray = "^2024.2.0"
 sigmaepsilon-mesh = ">=2.3.2"
 
-
 [tool.poetry.group.dev.dependencies]
 matplotlib = "^3.8.3"
 texttable = "^1.7.0"
@@ -42,13 +41,11 @@ ipykernel = "^6.29.2"
 pyyaml = "^6.0.1"
 black = "^24.2.0"
 
-
 [tool.poetry.group.test.dependencies]
 coverage = "^7.4.1"
 pytest = "^8.0.1"
 pytest-cov = "^4.1.0"
 pyyaml = "^6.0.1"
-
 
 [tool.poetry.group.docs.dependencies]
 ipython = "^8.21.0"
@@ -68,4 +65,3 @@ numpy = ">=1.22.2"
 pillow = ">=10.0.1"
 tornado = ">=6.3.3"
 fonttools = ">=4.43.0"
-
