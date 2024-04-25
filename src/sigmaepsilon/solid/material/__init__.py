@@ -1,6 +1,10 @@
 from os.path import dirname, abspath
 from importlib.metadata import metadata
 
+from numba import config as nbconfig
+
+nbconfig.CUDA_LOW_OCCUPANCY_WARNINGS = False
+
 from sigmaepsilon.core.config import namespace_package_name
 
 from .frame import BernoulliFrameSection
