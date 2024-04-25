@@ -10,6 +10,7 @@ from ..config import __has_cupy__, __has_numba_cuda__
 __cache = True
 
 
+
 @njit(nogil=True, cache=__cache)
 def HMH_M(strs: ndarray) -> float:
     """
