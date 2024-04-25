@@ -18,18 +18,23 @@ from sigmaepsilon.solid.material.utils import elastic_stiffness_matrix
 
 class TestLinearElasticMaterial(SolidMaterialTestCase):
     def test_basic_example_scenario(self):
-        hooke_123 = elastic_stiffness_matrix(
+        material_params = dict(
             E1=2100.0,
             E2=210.0,
             G13=3000.0,
             NU12=0.2,
             NU23=0.02,
             isoplane="23",
+        )
+        hooke_123 = elastic_stiffness_matrix(
             verify=True,
+            **material_params,
         )
         self.assertValidMaterial(hooke_123)
         frame = ReferenceFrame(dim=3)
-        stiffness = ElasticityTensor(hooke_123, frame=frame, tensorial=False)
+        stiffness = ElasticityTensor(
+            hooke_123, frame=frame, tensorial=False, material_params=material_params
+        )
 
         failure_model = HoffmanFailureCriterion(params=[1.0 for _ in range(9)])
 
@@ -83,8 +88,12 @@ class TestLinearElasticMaterial(SolidMaterialTestCase):
         section.elastic_stiffness_matrix()
 
         section.utilization(strains=2 * np.random.rand(10, 5) / 1000) * 100
-        section.utilization(strains=np.array([1.0, 0.0, 0.0, 0.0, 0.0]), z=[0], squeeze=False)
-        section.utilization(strains=np.array([1.0, 0.0, 0.0, 0.0, 0.0]), z=[0], squeeze=True)
+        section.utilization(
+            strains=np.array([1.0, 0.0, 0.0, 0.0, 0.0]), z=[0], squeeze=False
+        )
+        section.utilization(
+            strains=np.array([1.0, 0.0, 0.0, 0.0, 0.0]), z=[0], squeeze=True
+        )
         section.utilization(
             strains=np.array([1.0, 0.0, 0.0, 0.0, 0.0]), z=[-1, 0, 1], squeeze=False
         )
