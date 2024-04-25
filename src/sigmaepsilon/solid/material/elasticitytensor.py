@@ -20,21 +20,31 @@ class ElasticityTensor(Tensor4):
     Parameters
     ----------
     yield_strength: Number, Optional
-        The maximum stress the material can sustain without experiencing
-        relevant losses in performance. Default is `np.Infinity`.
+        The maximum eqivalent stress the material can sustain without experiencing
+        significant losses in performance. Default is `np.Infinity`.
+    material_params: dict, Optional
+        A dictionary of material parameters that can be used to instantiate the
+        stiffness matrix. Default is `None`.
     """
 
     number_of_stress_components = 6
 
-    def __init__(self, *args, yield_strength: Optional[Number] = np.Infinity, **kwargs):
-        self._input_params = None
-        if len(args) > 0 and isinstance(args[0], dict):
-            if _has_elastic_params(args[0]):
-                self._input_params = args[0]
-                args = (elastic_stiffness_matrix(args[0]),)
-        elif _has_elastic_params(**kwargs):
-            self._input_params = kwargs
-            args = (elastic_stiffness_matrix(**kwargs),)
+    def __init__(
+        self,
+        *args,
+        yield_strength: Optional[Number] = np.Infinity,
+        material_params: dict = None,
+        **kwargs
+    ):
+        self._input_params = material_params
+        if not self._input_params:
+            if len(args) > 0 and isinstance(args[0], dict):
+                if _has_elastic_params(args[0]):
+                    self._input_params = args[0]
+                    args = (elastic_stiffness_matrix(args[0]),)
+            elif _has_elastic_params(**kwargs):
+                self._input_params = kwargs
+                args = (elastic_stiffness_matrix(**kwargs),)
 
         self._yield_strength = yield_strength
 
