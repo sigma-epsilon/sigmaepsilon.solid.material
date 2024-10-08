@@ -32,7 +32,7 @@ packages = [{ include = "sigmaepsilon", from = "src" }]
 [tool.poetry.dependencies]
 python = ">=3.10,<3.13"
 xarray = "^2024.2.0"
-sigmaepsilon-mesh = ">=3.0.1"
+sigmaepsilon-mesh = "^3.0.1"
 
 [tool.poetry.group.dev.dependencies]
 matplotlib = "^3.8.3"
