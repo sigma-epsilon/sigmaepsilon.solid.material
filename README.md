@@ -5,7 +5,7 @@
 [![Documentation Status](https://readthedocs.org/projects/sigmaepsilonsolidmaterial/badge/?version=latest)](https://sigmaepsilonsolidmaterial.readthedocs.io/en/latest/?badge=latest)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PyPI](https://badge.fury.io/py/sigmaepsilon.solid.material.svg)](https://pypi.org/project/sigmaepsilon.solid.material)
-[![Python](https://img.shields.io/badge/python-3.10%E2%80%923.11-blue)](https://www.python.org)
+[![Python](https://img.shields.io/badge/python-3.10|3.11|3.12-blue)](https://www.python.org)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Requirements Status](https://dependency-dash.repo-helper.uk/github/sigma-epsilon/sigmaepsilon.solid.material/badge.svg)](https://dependency-dash.repo-helper.uk/github/sigma-epsilon/sigmaepsilon.solid.material)
 
