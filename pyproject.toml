@@ -4,13 +4,14 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "sigmaepsilon.solid.material"
-version = "1.0.1"
+version = "1.0.2"
 description = "Material models for solid structures in Python."
 classifiers=[
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3 :: Only",
         "Operating System :: OS Independent",
 ]
@@ -29,9 +30,9 @@ documentation = "https://sigmaepsilonsolidmaterial.readthedocs.io/en/latest/?bad
 packages = [{ include = "sigmaepsilon", from = "src" }]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.12"
+python = ">=3.10,<3.13"
 xarray = "^2024.2.0"
-sigmaepsilon-mesh = ">=2.3.2"
+sigmaepsilon-mesh = "^3.0.2"
 
 [tool.poetry.group.dev.dependencies]
 matplotlib = "^3.8.3"

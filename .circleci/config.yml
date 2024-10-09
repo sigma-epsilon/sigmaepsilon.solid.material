@@ -2,23 +2,21 @@ version: 2.1
 
 orbs:
   python: circleci/python@2.1.1
+  codecov: codecov/codecov@4.2.0
 
 executors:
   my-executor:
     docker:
-      - image: cimg/python:3.10
+      - image: cimg/python:3.12
 
 jobs:
-  run_tests_3_10:
+  run_tests:
     executor: my-executor
     steps:
       - checkout
       - run:
-          name: Refresh packages
-          command: sudo apt-get update
-      - run:
-          name: Install xvfb for offline rendering
-          command: sudo apt-get install libgl1-mesa-glx xvfb
+          name: Create lock file
+          command: poetry lock --no-update
       - python/install-packages:
           pkg-manager: poetry
       - run:
@@ -30,15 +28,10 @@ jobs:
           command: |
             chmod +x ./run_tests_with_coverage.sh
             ./run_tests_with_coverage.sh
-      - run:
-          name: Upload coverage reports to Codecov
-          command: |
-            curl -Os https://uploader.codecov.io/latest/linux/codecov
-            chmod +x codecov
-            ./codecov -t ${CODECOV_TOKEN}
       - store_artifacts:
           name: Store coverage report as artifact
-          path: htmlcov
+          path: htmlcov/
+      - codecov/upload
       - store_test_results:
           name: Store test results
           path: test-results
@@ -93,13 +86,13 @@ jobs:
 workflows:
   test_and_deploy:
     jobs:
-      - run_tests_3_10
+      - run_tests
 
       - deploy_to_test_pypi:
           context:
             - TestPyPI deploy
           requires:
-            - run_tests_3_10
+            - run_tests
           filters:
             branches:
               only:
@@ -109,7 +102,7 @@ workflows:
           context:
             - PyPI deploy
           requires:
-            - run_tests_3_10
+            - run_tests
           filters:
             branches:
               only:
