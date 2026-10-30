@@ -38,7 +38,8 @@ def _find_all_ortho_params(**params):
 
     S = smat_sym_ortho_3d()
     S_skew = S - S.T
-    subs = [(sym, val) for sym, val in _params.items() if val is not None]
+    symbols = {str(sym): sym for sym in S.free_symbols}
+    subs = [(symbols[sym], val) for sym, val in _params.items() if val is not None]
     residual = S_skew.subs(subs)
     error = residual.norm()
     f = Function(error)

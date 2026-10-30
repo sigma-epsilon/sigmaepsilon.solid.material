@@ -84,11 +84,13 @@ def smat_sym_ortho_3d(imap: dict = None, **subs) -> sy.Matrix:
     sympy.Matrix
         6x6 symbolic compliance matrix.
     """
-    E1, E2, E3 = sy.symbols("E1 E2 E3")
-    G23, G12, G13 = sy.symbols("G23 G12 G13")
-    NU12, NU21 = sy.symbols("NU12 NU21")
-    NU13, NU31 = sy.symbols("NU13 NU31")
-    NU23, NU32 = sy.symbols("NU23 NU32")
+    # the engineering constants are real, otherwise derivatives of expressions
+    # like norms contain unevaluated terms (e.g. Derivative(re(x), x))
+    E1, E2, E3 = sy.symbols("E1 E2 E3", real=True)
+    G23, G12, G13 = sy.symbols("G23 G12 G13", real=True)
+    NU12, NU21 = sy.symbols("NU12 NU21", real=True)
+    NU13, NU31 = sy.symbols("NU13 NU31", real=True)
+    NU23, NU32 = sy.symbols("NU23 NU32", real=True)
     S = sy.Matrix(
         [
             [1 / E1, -NU12 / E1, -NU13 / E1, 0, 0, 0],
@@ -100,7 +102,8 @@ def smat_sym_ortho_3d(imap: dict = None, **subs) -> sy.Matrix:
         ]
     )
     if len(subs) > 0:
-        S = S.subs([(sym, val) for sym, val in subs.items()])
+        symbols = {str(sym): sym for sym in S.free_symbols}
+        S = S.subs([(symbols.get(str(sym), sym), val) for sym, val in subs.items()])
     if imap is None:
         return S
     assert len(imap) == 6, "Indexmap must contain 6 indices."
