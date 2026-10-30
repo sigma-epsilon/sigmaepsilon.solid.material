@@ -1,8 +1,8 @@
 version: 2.1
 
 orbs:
-  python: circleci/python@2.1.1
-  codecov: codecov/codecov@4.2.0
+  python: circleci/python@3.0.0
+  codecov: codecov/codecov@6.1.0
 
 executors:
   my-executor:
@@ -23,12 +23,10 @@ jobs:
             uv sync --locked --group test
       - run:
           name: Run tests and generate coverage report
-          command: |
-            chmod +x ./run_tests_with_coverage.sh
-            ./run_tests_with_coverage.sh
+          command: uv run pytest --cov-report=xml --cov-config=.coveragerc --cov=sigmaepsilon.solid.material
       - store_artifacts:
           name: Store coverage report as artifact
-          path: htmlcov/
+          path: coverage.xml
       - codecov/upload
       - store_test_results:
           name: Store test results
