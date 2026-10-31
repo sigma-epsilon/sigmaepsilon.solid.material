@@ -258,7 +258,8 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         # determined at 3 locations per layer.
         for i, layer in enumerate(layers):
             zi = layer._zi
-            C = layer.material_stiffness_matrix
+            # the same stiffness as for the ABDS matrix, in the frame of the shell
+            C = layer.material_elastic_stiffness_matrix()
             Exi, Eyi = C[0, 0], C[1, 1]
             num_points_per_layer = len(layer.__loc__)
 
@@ -299,9 +300,10 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         pot_p_x, pot_p_y = 0.0, 0.0
         for layer in layers:
             dJ = 0.5 * (layer._tmax - layer._tmin)
-            C = layer.material_stiffness_matrix
-            Gxi = C[-2, -2]
-            Gyi = C[-1, -1]
+            # components in the order 11, 22, 12, 13, 23
+            C = layer.material_elastic_stiffness_matrix()
+            Gxi = C[3, 3]
+            Gyi = C[4, 4]
             for loc, weight in zip(gP, gW):
                 sfx, sfy = layer._loc_to_shear_factors(loc)
                 pot_p_x += 0.5 * (sfx**2) * dJ * weight / Gxi
