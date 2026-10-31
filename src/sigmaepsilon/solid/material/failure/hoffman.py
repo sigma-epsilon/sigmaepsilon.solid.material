@@ -86,7 +86,7 @@ class HoffmanFailureCriterion(AbstractFailureCriterion):
                 params = tuple(
                     getallfromkwargs(
                         self.__class__.principal_model_params,
-                        default=np.Infinity,
+                        default=np.inf,
                         **kwargs,
                     )
                 )

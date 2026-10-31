@@ -24,7 +24,10 @@ exclude_lines =
     # Don't complain about abstract methods, they aren't run:
     @(abc\.)?abstractmethod
     @(abc\.)?abstractproperty
-    
+
+    # Don't complain about the bodies of protocol methods and stubs:
+    ^\s*\.\.\.$
+
     # Don't complain about numba jitted code
     @njit
     @jit

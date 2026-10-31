@@ -29,27 +29,23 @@ class Tensor2x3(Tensor2):
             arr = args[0]
             shape = arr.shape
             if shape[-1] == 6:
+                if len(shape) >= 2:
+                    is_bulk = kwargs.get("bulk", True)
+                    if not is_bulk:
+                        raise ValueError("Incorrect input!")
+                    kwargs["bulk"] = is_bulk
+                else:
+                    is_bulk = kwargs.get("bulk", False)
+                    if is_bulk:
+                        raise ValueError("Incorrect input!")
+                arr = _map_6x1_to_3x3(arr)
+            elif shape[-2:] == (3, 3):
                 if len(shape) >= 3:
                     is_bulk = kwargs.get("bulk", True)
                     if not is_bulk:
                         raise ValueError("Incorrect input!")
                     kwargs["bulk"] = is_bulk
                 else:
-                    if not len(shape) == 2:
-                        raise TensorShapeMismatchError("Invalid shape!")
-                    is_bulk = kwargs.get("bulk", False)
-                    if is_bulk:
-                        raise ValueError("Incorrect input!")
-                arr = _map_6x1_to_3x3(arr)
-            elif shape[-1] == 3:
-                if len(shape) >= 5:
-                    is_bulk = kwargs.get("bulk", True)
-                    if not is_bulk:
-                        raise ValueError("Incorrect input!")
-                    kwargs["bulk"] = is_bulk
-                else:
-                    if not len(shape) == 4:
-                        raise TensorShapeMismatchError("Invalid shape!")
                     is_bulk = kwargs.get("bulk", False)
                     if is_bulk:
                         raise ValueError("Incorrect input!")
