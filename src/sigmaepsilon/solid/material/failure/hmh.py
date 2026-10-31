@@ -1,5 +1,4 @@
 from typing import Optional, Tuple, Union, ClassVar, Iterable, MutableMapping
-from collections import defaultdict
 from numbers import Number
 
 from xarray import DataArray
@@ -41,6 +40,9 @@ class HuberMisesHenckyFailureCriterion(AbstractFailureCriterion):
     Parameters
     ----------
     yield_strength: float
+    params: Iterable[float], Optional
+        The strength parameters as an iterable of length 1, an alternative
+        to `yield_strength`. Default is None.
     """
 
     model_type = MaterialModelType.DEFAULT
@@ -49,11 +51,14 @@ class HuberMisesHenckyFailureCriterion(AbstractFailureCriterion):
 
     def __init__(
         self,
-        yield_strength: Optional[float] = np.Infinity,
+        yield_strength: Optional[float] = np.inf,
         evaluator: Optional[Union[FunctionEvaluator, None]] = None,
+        params: Optional[Union[Iterable[float], None]] = None,
     ):
         if isinstance(evaluator, FunctionEvaluator):
-            evaluator = defaultdict(lambda: evaluator)
+            # the same implementation for every backend
+            keys = ("vectorized", "bulk", "cuda", "cuda-guv", "cuda-kernel", "cuda-cp")
+            evaluator = {key: evaluator for key in keys}
 
         if evaluator is None:
             evaluator = {
@@ -74,6 +79,9 @@ class HuberMisesHenckyFailureCriterion(AbstractFailureCriterion):
         self._yield_strength = yield_strength
         self._evaluator = evaluator
 
+        if params is not None:
+            self.params = params
+
     @property
     def number_of_strength_parameters(self) -> int:
         return 1
@@ -90,7 +98,7 @@ class HuberMisesHenckyFailureCriterion(AbstractFailureCriterion):
         """
         Sets the strength parameters.
         """
-        if isinstance(value, Iterable):
+        if isinstance(value, Iterable) and not isinstance(value, str):
             if not len(value) == 1:
                 raise ValueError("Only one parameter is expected")
             self._yield_strength = value[0]

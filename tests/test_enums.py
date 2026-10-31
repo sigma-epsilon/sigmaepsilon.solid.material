@@ -6,48 +6,85 @@ from sigmaepsilon.solid.material.enums import MaterialModelType
 
 
 class TestMaterialModelType(SolidMaterialTestCase):
-    
+
     def test_membrane_stress_variables(self):
         self.assertEqual(MaterialModelType.MEMBRANE.number_of_stress_variables, 3)
 
     def test_plate_uflyand_mindlin_stress_variables(self):
-        self.assertEqual(MaterialModelType.PLATE_UFLYAND_MINDLIN.number_of_stress_variables, 5)
+        self.assertEqual(
+            MaterialModelType.PLATE_UFLYAND_MINDLIN.number_of_stress_variables, 5
+        )
 
     def test_plate_kirchhoff_love_stress_variables(self):
-        self.assertEqual(MaterialModelType.PLATE_KIRCHHOFF_LOVE.number_of_stress_variables, 5)
+        self.assertEqual(
+            MaterialModelType.PLATE_KIRCHHOFF_LOVE.number_of_stress_variables, 5
+        )
 
     def test_shell_uflyand_mindlin_stress_variables(self):
-        self.assertEqual(MaterialModelType.SHELL_UFLYAND_MINDLIN.number_of_stress_variables, 8)
+        self.assertEqual(
+            MaterialModelType.SHELL_UFLYAND_MINDLIN.number_of_stress_variables, 8
+        )
 
     def test_shell_kirchhoff_love_stress_variables(self):
-        self.assertEqual(MaterialModelType.SHELL_KIRCHHOFF_LOVE.number_of_stress_variables, 8)
+        self.assertEqual(
+            MaterialModelType.SHELL_KIRCHHOFF_LOVE.number_of_stress_variables, 8
+        )
 
     def test_default_stress_variables(self):
         self.assertEqual(MaterialModelType.DEFAULT.number_of_stress_variables, 6)
-        
-    def test_default_stress_variables(self):
+
+    def test_undefined_stress_variables(self):
         self.assertEqual(MaterialModelType.UNDEFINED.number_of_stress_variables, None)
-        
-    def test_membrane_stress_variables(self):
-        self.assertEqual(MaterialModelType.MEMBRANE.number_of_material_stress_variables, 3)
 
-    def test_plate_uflyand_mindlin_stress_variables(self):
-        self.assertEqual(MaterialModelType.PLATE_UFLYAND_MINDLIN.number_of_material_stress_variables, 5)
+    def test_membrane_material_stress_variables(self):
+        self.assertEqual(
+            MaterialModelType.MEMBRANE.number_of_material_stress_variables, 3
+        )
 
-    def test_plate_kirchhoff_love_stress_variables(self):
-        self.assertEqual(MaterialModelType.PLATE_KIRCHHOFF_LOVE.number_of_material_stress_variables, 5)
+    def test_plate_uflyand_mindlin_material_stress_variables(self):
+        self.assertEqual(
+            MaterialModelType.PLATE_UFLYAND_MINDLIN.number_of_material_stress_variables,
+            5,
+        )
 
-    def test_shell_uflyand_mindlin_stress_variables(self):
-        self.assertEqual(MaterialModelType.SHELL_UFLYAND_MINDLIN.number_of_material_stress_variables, 5)
+    def test_plate_kirchhoff_love_material_stress_variables(self):
+        self.assertEqual(
+            MaterialModelType.PLATE_KIRCHHOFF_LOVE.number_of_material_stress_variables,
+            5,
+        )
 
-    def test_shell_kirchhoff_love_stress_variables(self):
-        self.assertEqual(MaterialModelType.SHELL_KIRCHHOFF_LOVE.number_of_material_stress_variables, 5)
+    def test_shell_uflyand_mindlin_material_stress_variables(self):
+        self.assertEqual(
+            MaterialModelType.SHELL_UFLYAND_MINDLIN.number_of_material_stress_variables,
+            5,
+        )
 
-    def test_default_stress_variables(self):
-        self.assertEqual(MaterialModelType.DEFAULT.number_of_material_stress_variables, 6)
-        
-    def test_default_stress_variables(self):
-        self.assertEqual(MaterialModelType.UNDEFINED.number_of_material_stress_variables, None)
+    def test_shell_kirchhoff_love_material_stress_variables(self):
+        self.assertEqual(
+            MaterialModelType.SHELL_KIRCHHOFF_LOVE.number_of_material_stress_variables,
+            5,
+        )
+
+    def test_default_material_stress_variables(self):
+        self.assertEqual(
+            MaterialModelType.DEFAULT.number_of_material_stress_variables, 6
+        )
+
+    def test_undefined_material_stress_variables(self):
+        self.assertEqual(
+            MaterialModelType.UNDEFINED.number_of_material_stress_variables, None
+        )
+
+    def test_component_aliases(self):
+        for model_type in MaterialModelType:
+            self.assertEqual(
+                model_type.number_of_stress_components,
+                model_type.number_of_stress_variables,
+            )
+            self.assertEqual(
+                model_type.number_of_material_stress_components,
+                model_type.number_of_material_stress_variables,
+            )
 
 
 if __name__ == "__main__":

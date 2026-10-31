@@ -228,5 +228,31 @@ class TestHoffmanFittingMembrane(SolidMaterialTestCase):
         return prediction, max_error, total_error
 
 
+class TestHoffmanFailureCriterionInput(SolidMaterialTestCase):
+    def setUp(self):
+        self.strengths = dict(
+            Xc=-1.0, Xt=1.0, Yc=-1.0, Yt=1.0, Zc=-1.0, Zt=1.0, S23=1.0, S13=1.0, S12=1.0
+        )
+
+    def test_create_from_keyword_arguments(self):
+        obj = HoffmanFailureCriterion(**self.strengths)
+        self.assertEqual(obj.params, tuple(self.strengths.values()))
+
+    def test_call(self):
+        obj = HoffmanFailureCriterion(**self.strengths)
+        stresses = np.random.rand(4, 6)
+        self.assertTrue(
+            np.allclose(obj(stresses=stresses), obj.utilization(stresses=stresses))
+        )
+
+    def test_invalid_number_of_stress_components(self):
+        obj = HoffmanFailureCriterion(**self.strengths)
+        stresses = np.random.rand(4, 5)
+        self.assertFailsProperly(
+            ValueError, obj._utilization, tuple(stresses.T.copy())
+        )
+        self.assertFailsProperly(ValueError, obj._utilization, stresses)
+
+
 if __name__ == "__main__":
     unittest.main()
