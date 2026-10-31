@@ -25,12 +25,25 @@ from sigmaepsilon.solid.material.utils.mindlin import (
 E, NU, YIELD_STRENGTH, THICKNESS = 210000.0, 0.3, 355.0, 0.1
 
 
-def in_plane_stiffness() -> np.ndarray:
+def in_plane_stiffness(E: float = E, nu: float = NU) -> np.ndarray:
     """
-    The in-plane block of the material stiffness matrix the layers use.
+    The plane stress stiffness matrix of an isotropic material.
     """
-    hooke = elastic_stiffness_matrix(E=E, NU=NU)
-    return _get_shell_material_stiffness_matrix(hooke)[:3, :3]
+    return (E / (1 - nu**2)) * np.array(
+        [[1.0, nu, 0.0], [nu, 1.0, 0.0], [0.0, 0.0, (1 - nu) / 2]]
+    )
+
+
+def shear_force_integral(section) -> np.ndarray:
+    """
+    Integrates the shear factors through the thickness with Simpson's rule,
+    which is exact for the quadratic distribution in a layer.
+    """
+    result = np.zeros(2)
+    for layer in section.layers:
+        sf = layer.shear_factors
+        result += (layer._tmax - layer._tmin) / 6 * (sf[0] + 4 * sf[1] + sf[2])
+    return result
 
 
 def homogeneous_section(cls, num_layers: int = 1):
@@ -314,6 +327,67 @@ class TestSurfaceBase(SolidMaterialTestCase):
         C = elastic_stiffness_matrix(E=E, NU=NU)
         self.assertAlmostEqual(ABDS[6, 6], C[-1, -1] * THICKNESS)
         self.assertTrue(np.allclose(ABDS[:3, :3], THICKNESS * in_plane_stiffness()))
+
+
+class TestShellMaterialStiffness(SolidMaterialTestCase):
+    def test_isotropic_plane_stress(self):
+        hooke = elastic_stiffness_matrix(E=E, NU=NU)
+        C = _get_shell_material_stiffness_matrix(hooke)
+        self.assertTrue(np.allclose(C[:3, :3], in_plane_stiffness()))
+        G = E / (2 * (1 + NU))
+        self.assertTrue(np.allclose(C[3:, 3:], G * np.eye(2)))
+        self.assertTrue(np.allclose(C[:3, 3:], 0.0))
+
+    def test_orthotropic_plane_stress(self):
+        E1, E2, G12, NU12, NU23 = 140000.0, 10000.0, 5000.0, 0.3, 0.4
+        hooke = elastic_stiffness_matrix(
+            E1=E1, E2=E2, G12=G12, NU12=NU12, NU23=NU23, isoplane="23"
+        )
+        C = _get_shell_material_stiffness_matrix(hooke)
+        # reduced stiffness of classical laminate theory
+        NU21 = NU12 * E2 / E1
+        Q = np.array(
+            [
+                [E1 / (1 - NU12 * NU21), NU12 * E2 / (1 - NU12 * NU21), 0.0],
+                [NU12 * E2 / (1 - NU12 * NU21), E2 / (1 - NU12 * NU21), 0.0],
+                [0.0, 0.0, G12],
+            ]
+        )
+        self.assertTrue(np.allclose(C[:3, :3], Q))
+        # transverse shear moduli G13 and G23
+        G23 = E2 / (2 * (1 + NU23))
+        self.assertTrue(np.allclose(np.diag(C[3:, 3:]), [G12, G23]))
+
+    def test_plate_bending_stiffness(self):
+        section = homogeneous_section(MindlinPlateSection)
+        D = E * THICKNESS**3 / (12 * (1 - NU**2))
+        self.assertAlmostEqual(section.ABDS[0, 0], D)
+        self.assertAlmostEqual(section.ABDS[0, 1], NU * D)
+        G = E / (2 * (1 + NU))
+        self.assertAlmostEqual(section.ABDS[3, 3], 5 / 6 * G * THICKNESS)
+
+    def test_shear_equilibrium_of_laminates(self):
+        Section = MindlinShellSection
+        material = Section.Material(
+            E1=140000.0, E2=10000.0, G12=5000.0, NU12=0.3, NU23=0.4, isoplane="23"
+        )
+        layups = [
+            [(0.0, 0.03), (90.0, 0.04), (0.0, 0.03)],
+            [(30.0, 0.05), (-30.0, 0.05)],
+            [(0.0, 0.02), (45.0, 0.03), (-45.0, 0.03), (90.0, 0.02)],
+        ]
+        for layup in layups:
+            layers = [
+                Section.Layer(material=material, angle=angle, thickness=t)
+                for angle, t in layup
+            ]
+            section = Section(layers=layers)
+            section.elastic_stiffness_matrix()
+            # the shear stresses add up to the shear forces
+            self.assertTrue(np.allclose(shear_force_integral(section), 1.0))
+            kx = section._shear_correction_factor_x
+            ky = section._shear_correction_factor_y
+            self.assertTrue(0 < kx <= 1 and 0 < ky <= 1)
 
 
 if __name__ == "__main__":

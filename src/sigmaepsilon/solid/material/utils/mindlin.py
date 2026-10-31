@@ -13,15 +13,24 @@ __cache = True
 def _get_shell_material_stiffness_matrix(hooke: ndarray) -> ndarray:
     """
     Returns the 5x5 material stiffness matrix of a shell from the 6x6
-    material stiffness matrix.
+    material stiffness matrix, with the components in the order
+    11, 22, 12, 13, 23.
+
+    The normal stress through the thickness is zero in shells and plates,
+    hence the corresponding strain is condensed out of the 6x6 matrix,
+    instead of being constrained to zero. For an isotropic material, this
+    results in the plane stress stiffness E / (1 - nu**2).
     """
-    offset = 0 if hooke.shape[-1] == 6 else 1
-    imap = [0, 1, 5 - offset, 4 - offset, 3 - offset]
-    res = np.zeros((5, 5), dtype=float)
-    for i in range(5):
-        for j in range(5):
-            res[i, j] = hooke[imap[i], imap[j]]
-    return res
+    if hooke.shape[-1] == 6:
+        # s33 = C33 * e33 + C3a @ e_a = 0 -> e33 = -C3a @ e_a / C33
+        imap = [0, 1, 5, 4, 3]
+        C_aa = hooke[np.ix_(imap, imap)]
+        C_a3 = hooke[imap, 2]
+        C_3a = hooke[2, imap]
+        return C_aa - np.outer(C_a3, C_3a) / hooke[2, 2]
+
+    imap = [0, 1, 4, 3, 2]
+    return np.array(hooke, dtype=float)[np.ix_(imap, imap)]
 
 
 def shell_rotation_matrix(angle: float, rad: bool = False) -> ndarray:
