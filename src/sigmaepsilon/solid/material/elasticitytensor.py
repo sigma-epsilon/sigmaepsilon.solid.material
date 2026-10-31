@@ -21,7 +21,7 @@ class ElasticityTensor(Tensor4):
     ----------
     yield_strength: Number, Optional
         The maximum eqivalent stress the material can sustain without experiencing
-        significant losses in performance. Default is `np.Infinity`.
+        significant losses in performance. Default is `np.inf`.
     material_params: dict, Optional
         A dictionary of material parameters that can be used to instantiate the
         stiffness matrix. Default is `None`.
@@ -32,7 +32,7 @@ class ElasticityTensor(Tensor4):
     def __init__(
         self,
         *args,
-        yield_strength: Optional[Number] = np.Infinity,
+        yield_strength: Optional[Number] = np.inf,
         material_params: dict = None,
         **kwargs
     ):
@@ -110,7 +110,7 @@ class ElasticityTensor(Tensor4):
         """
         Sets the yield strength.
         """
-        self._yield_strength = np.Infinity if value is None else value
+        self._yield_strength = np.inf if value is None else value
         if isinstance(self._input_params, dict):
             self._input_params["yield_strength"] = self._yield_strength
 

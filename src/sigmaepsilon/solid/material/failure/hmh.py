@@ -49,7 +49,7 @@ class HuberMisesHenckyFailureCriterion(AbstractFailureCriterion):
 
     def __init__(
         self,
-        yield_strength: Optional[float] = np.Infinity,
+        yield_strength: Optional[float] = np.inf,
         evaluator: Optional[Union[FunctionEvaluator, None]] = None,
     ):
         if isinstance(evaluator, FunctionEvaluator):

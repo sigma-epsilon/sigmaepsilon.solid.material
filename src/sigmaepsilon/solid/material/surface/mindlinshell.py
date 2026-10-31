@@ -212,7 +212,7 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         hooke = elastic_stiffness_matrix(**kwargs)
         frame = ReferenceFrame(dim=3)
         stiffness = ElasticityTensor(hooke, frame=frame, tensorial=False)
-        yield_strength = kwargs.get("yield_strength", np.Infinity)
+        yield_strength = kwargs.get("yield_strength", np.inf)
         failure_model = cls.failure_class(yield_strength=yield_strength)
         return LinearElasticMaterial(stiffness=stiffness, failure_model=failure_model)
 
