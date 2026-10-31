@@ -120,6 +120,8 @@ class AbstractFailureCriterion:
             _solver_params = {
                 "length": 8,
                 "nPop": 100,
+                # the objective is an error measure, BGA maximizes by default
+                "minimize": True,
             }
             _solver_params.update(solver_params)
             solver = BGA(objective, ranges, **_solver_params)

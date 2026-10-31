@@ -582,7 +582,8 @@ class MindlinShellSection(SurfaceSection[MindlinShellLayer]):
         assert any([return_stresses, return_utilization])
 
         # mapping input points
-        z = atleast1d(z)
+        # integer input would be truncated by the mapping
+        z = atleast1d(z).astype(float)
         bounds = self.bounds
         z = to_range_1d(z, source=rng, target=(bounds[0, 0], bounds[-1, -1]))
 

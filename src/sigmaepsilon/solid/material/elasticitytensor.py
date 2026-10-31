@@ -39,9 +39,9 @@ class ElasticityTensor(Tensor4):
         self._input_params = material_params
         if not self._input_params:
             if len(args) > 0 and isinstance(args[0], dict):
-                if _has_elastic_params(args[0]):
+                if _has_elastic_params(**args[0]):
                     self._input_params = args[0]
-                    args = (elastic_stiffness_matrix(args[0]),)
+                    args = (elastic_stiffness_matrix(**args[0]),) + args[1:]
             elif _has_elastic_params(**kwargs):
                 self._input_params = kwargs
                 args = (elastic_stiffness_matrix(**kwargs),)

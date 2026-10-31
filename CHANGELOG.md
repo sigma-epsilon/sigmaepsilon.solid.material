@@ -19,6 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Replaced `np.Infinity`, which was removed in NumPy 2, with `np.inf`.
+- `Tensor2x3`, and with it `SmallStrainTensor` and `CauchyStressTensor`, rejected 3x3 matrices and 6-vectors, as the shape checks were those of a 4th-order tensor.
+- `ElasticityTensor` can be created from a dictionary of engineering constants.
+- Integer values for `z` in the postprocessing of surfaces (e.g. `z=[-1, 0, 1]`) were truncated during the mapping to the thickness, so every point was evaluated at the reference surface.
+- Fitting the parameters of `HuberMisesHenckyFailureCriterion` had no effect, as it couldn't be instantiated from parameters. It accepts `params` now.
+- The binary genetic algorithm maximized the error when fitting failure criteria, since `sigmaepsilon.math` 2.2.0 changed it to maximize by default.
+- `HuberMisesHenckyFailureCriterion` accepts a single `FunctionEvaluator` for every backend.
+- Setting the `params` of `HuberMisesHenckyFailureCriterion` to a string raises a `TypeError`.
 
 ## [1.0.0] - 2023-09-27
 
